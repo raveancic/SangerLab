@@ -88,3 +88,22 @@ Controllate le istruzioni di disegno Canvas dopo allineamento e il pulsante
 Vedi picco: la C della reference e la T della lettura condividono la stessa
 ascissa nella variante C16069T. Screenshot verificato visivamente.
 Non testato su dispositivo Android fisico o sul sito GitHub Pages aggiornato.
+
+## v0.1.3 — Contrasto, tema scuro e loghi
+
+- 31 test Node del parser e del core superati; del core cambia esclusivamente VERSION.
+- Test Chromium headless con HTML caricato in una pagina di prova: Example7.ab1, 857 basi conservate, 11 differenze candidate; oggetto analysis identico prima e dopo il cambio di tema. Apertura popup di trimming e selezione del logo verificate.
+- Viewport mobile 390 x 844 e input touch simulato: tema e selezione logo funzionanti, nessun overflow orizzontale del documento prima dell'analisi.
+- Screenshot desktop Light/Dark e cromatogramma scuro ispezionati. La navigazione file:// e verso un dominio di prova e' bloccata dalle politiche del browser dell'ambiente; persistenza dopo ricaricamento, sito GitHub Pages e dispositivi Android/iPad fisici non verificati. La mancata disponibilita' di localStorage non impedisce l'uso dell'applicazione.
+
+### v0.1.3 — grafica definitiva
+
+Integrata esattamente l'anteprima approvata `SangerLab_design_logo_giallo.html`:
+logo vettoriale fisso, giallo #FFD400 nei due temi, sfondo geometrico fisso
+con quattro forme, pannelli bianchi o antracite. Nessun selettore del logo.
+Verificata l'identità dei quattro blocchi script/reference con l'anteprima
+precedente e l'identità byte per byte dell'HTML ricostruito con `build.py`
+rispetto all'anteprima approvata. Controllo sintattico Node e 31/31 test
+unitari superati. Il collaudo finale sul sito pubblicato e sul tablet
+fisico resta da effettuare; nessun nuovo collaudo grafico in questa fase
+che riguarda soltanto la preparazione del pacchetto.

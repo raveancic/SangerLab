@@ -8,7 +8,22 @@
   const bundled = JSON.parse($('sanger-reference').textContent);
   const N = bundled.sequence.length;
   const canonical = bundled.sequence.slice(N - bundled.origin + 1) + bundled.sequence.slice(0, N - bundled.origin + 1);
-  const colors = {A:'#19854b',C:'#326fbe',G:'#334155',T:'#c94652',N:'#8b7b89',R:'#8b7b89',Y:'#8b7b89'};
+  const colors = {};
+  const chartPalettes = {
+    light:{A:'#00843e',C:'#005ccc',G:'#151515',T:'#c31839',amb:'#654880',refLane:'#d9caff',sampleLane:'#ffffff',excluded:'#d4d4d4bb',diff:'#e6ddff',diffLane:'#bca5ff',selected:'#8b5cff35',label:'#393939',refLabel:'#2a165a',ink:'#111111',grid:'#b4b4b4',qLine:'#777777',unmapped:'#595959',qLow:'#c45300',qHigh:'#7042df',deletion:'#5c28c7'},
+    dark:{A:'#53f58b',C:'#6db9ff',G:'#f7f7f7',T:'#ff657d',amb:'#d9b5ff',refLane:'#39276c',sampleLane:'#35373b',excluded:'#55555ab8',diff:'#2a2145',diffLane:'#563b9a',selected:'#a684ff42',label:'#d6d6d9',refLabel:'#f5eaff',ink:'#ffffff',grid:'#56565e',qLine:'#a5a5ae',unmapped:'#b9b9bf',qLow:'#ff9a43',qHigh:'#a98aff',deletion:'#d2baff'}
+  };
+  let palette=chartPalettes.light;
+  function readPreference(key){try{return localStorage.getItem(key);}catch{return null;}}
+  function savePreference(key,value){try{localStorage.setItem(key,value);}catch{}}
+  function applyTheme(theme){
+    const dark=theme==='dark';document.documentElement.dataset.theme=dark?'dark':'light';
+    palette=chartPalettes[dark?'dark':'light'];Object.assign(colors,{A:palette.A,C:palette.C,G:palette.G,T:palette.T,N:palette.amb,R:palette.amb,Y:palette.amb});
+    const button=$('theme-toggle');button.textContent=dark?'☀ Light':'☾ Dark';button.setAttribute('aria-pressed',String(dark));button.setAttribute('aria-label',dark?'Attiva tema chiaro':'Attiva tema scuro');
+    document.querySelector('meta[name="theme-color"]').content=dark?'#303236':'#ffffff';
+    drawTrace();renderInspector();if(state.result)renderAlignment();
+  }
+
   const state = {read:null,reference:null,origin:bundled.origin,result:null,trimMethod:'Mott',trimCutoff:0.01,autoEmpty:false,
     readHash:null,referenceHash:null,viewStart:0,selected:null,alignmentPage:0,worker:null,run:0,load:0,busy:false,mapping:new Map(),elapsed:null};
   const number = n => n === null || n === undefined ? '—' : Number(n).toLocaleString('it-IT');
@@ -124,44 +139,44 @@
     let minimum=0,maximum=1;
     for(const b of ['A','C','G','T'])for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){const value=read.channels[b][i];if(value>maximum)maximum=value;if(value<minimum)minimum=value;}
     // A fixed, contrasting reference lane makes the aligned bases unmistakable.
-    ctx.fillStyle='#f1e8ff';ctx.fillRect(0,33,w,19);
-    ctx.fillStyle='#f7f7f7';ctx.fillRect(0,53,w,17);
+    ctx.fillStyle=palette.refLane;ctx.fillRect(0,33,w,19);
+    ctx.fillStyle=palette.sampleLane;ctx.fillRect(0,53,w,17);
     let trim={start:0,end:0};try{trim=region();}catch{}
     for(let i=lo;i<hi;i++) {
       const x1=x(i? (peaks[i-1]+peaks[i])/2:sampleLo),x2=x(i+1<peaks.length?(peaks[i]+peaks[i+1])/2:sampleHi);
       const a=Math.min(x1,x2),b=Math.max(x1,x2);
-      if(i<trim.start||i>=trim.end){ctx.fillStyle='#e5e4eab8';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
-      if(aligned&&['X','I','?'].includes(state.mapping.get(i)?.op)){ctx.fillStyle='#eee3fa';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);ctx.fillStyle='#c8a3f4';ctx.fillRect(Math.max(left,a),33,Math.min(right,b)-Math.max(left,a),37);}
-      if(state.selected===i){ctx.fillStyle='#d8c5f396';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
+      if(i<trim.start||i>=trim.end){ctx.fillStyle=palette.excluded;ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
+      if(aligned&&['X','I','?'].includes(state.mapping.get(i)?.op)){ctx.fillStyle=palette.diff;ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);ctx.fillStyle=palette.diffLane;ctx.fillRect(Math.max(left,a),33,Math.min(right,b)-Math.max(left,a),37);}
+      if(state.selected===i){ctx.fillStyle=palette.selected;ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
     }
-    ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.textAlign='left';ctx.fillText('AB1',3,15);
+    ctx.fillStyle=palette.label;ctx.font='8px system-ui';ctx.textAlign='left';ctx.fillText('AB1',3,15);
     ctx.fillText('rCRS',3,29);
-    ctx.font='bold 11px Arial';ctx.fillStyle='#39225a';ctx.fillText('Reference',4,47);
-    ctx.fillStyle='#222';ctx.fillText('Campione',4,65);
-    if(!aligned){ctx.font='11px Arial';ctx.fillStyle='#39225a';ctx.fillText('Premi Allinea alla rCRS per visualizzare le basi di riferimento',left+5,47);}
-    ctx.strokeStyle='#e3e0e8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,241);ctx.lineTo(right,241);ctx.moveTo(left,314);ctx.lineTo(right,314);ctx.stroke();
+    ctx.font='bold 11px Arial';ctx.fillStyle=palette.refLabel;ctx.fillText('Reference',4,47);
+    ctx.fillStyle=palette.ink;ctx.fillText('Campione',4,65);
+    if(!aligned){ctx.font='11px Arial';ctx.fillStyle=palette.refLabel;ctx.fillText('Premi Allinea alla rCRS per visualizzare le basi di riferimento',left+5,47);}
+    ctx.strokeStyle=palette.grid;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,241);ctx.lineTo(right,241);ctx.moveTo(left,314);ctx.lineTo(right,314);ctx.stroke();
     const y=value=>239-(value-minimum)/(maximum-minimum)*164;
     ctx.save();ctx.beginPath();ctx.rect(left,69,width,175);ctx.clip();
     for(const b of ['G','C','A','T']){
       // Complement the dye channel and mirror its x-axis, not just the labels.
       const channel=read.channels[reverse?Core.reverseComplement(b):b];
-      ctx.strokeStyle=colors[b];ctx.lineWidth=1.25;ctx.beginPath();
+      ctx.strokeStyle=colors[b];ctx.lineWidth=1.55;ctx.beginPath();
       for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){if(i===Math.floor(sampleLo))ctx.moveTo(x(i),y(channel[i]));else ctx.lineTo(x(i),y(channel[i]));}ctx.stroke();
     }
     ctx.restore();
     const qmax=Math.max(60,...(read.qualities||[]));
-    ctx.setLineDash([3,3]);ctx.strokeStyle='#b9b2c5';ctx.beginPath();ctx.moveTo(left,314-20/qmax*50);ctx.lineTo(right,314-20/qmax*50);ctx.stroke();ctx.setLineDash([]);
-    ctx.textAlign='left';ctx.font='8px system-ui';ctx.fillStyle='#656274';ctx.fillText('Q20',2,314-20/qmax*50+3);
+    ctx.setLineDash([3,3]);ctx.strokeStyle=palette.qLine;ctx.beginPath();ctx.moveTo(left,314-20/qmax*50);ctx.lineTo(right,314-20/qmax*50);ctx.stroke();ctx.setLineDash([]);
+    ctx.textAlign='left';ctx.font='8px system-ui';ctx.fillStyle=palette.label;ctx.fillText('Q20',2,314-20/qmax*50+3);
     for(let i=lo;i<hi;i++){
       const px=x(peaks[i]),base=reverse?Core.reverseComplement(read.sequence[i]):read.sequence[i],q=read.qualities?.[i],mapped=state.mapping.get(i);
-      ctx.textAlign='center';ctx.font='8px system-ui';ctx.fillStyle='#656274';
+      ctx.textAlign='center';ctx.font='8px system-ui';ctx.fillStyle=palette.label;
       if(i%5===0||(i===lo&&(5-i%5)%5>=3)){ctx.fillText(String(i+1),px,15);if(aligned&&mapped)ctx.fillText(mapped.rcrsPos===null?'+':String(mapped.rcrsPos),px,29);}
-      ctx.font=hi-lo>80?'10px ui-monospace,monospace':'bold 12px ui-monospace,monospace';ctx.fillStyle=colors[base]||'#8b7b89';ctx.fillText(base,px,65);
+      ctx.font=hi-lo>80?'10px ui-monospace,monospace':'bold 12px ui-monospace,monospace';ctx.fillStyle=colors[base]||palette.amb;ctx.fillText(base,px,65);
       if(aligned){
-        ctx.fillStyle=mapped?(colors[mapped.refBase]||'#39225a'):'#96919d';
+        ctx.fillStyle=mapped?(colors[mapped.refBase]||palette.refLabel):palette.unmapped;
         ctx.fillText(mapped?mapped.refBase:'·',px,47);
       }
-      if(q!==undefined&&q!==null){const bw=Math.max(2,Math.min(12,width/(hi-lo)*.65));ctx.fillStyle=q<20?'#d89767':'#8d70b8';ctx.fillRect(px-bw/2,314-q/qmax*50,bw,q/qmax*50);if(hi-lo<=50&&(width/(hi-lo)>12||i%5===0)){ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.fillText(String(q),px,261);}}
+      if(q!==undefined&&q!==null){const bw=Math.max(2,Math.min(12,width/(hi-lo)*.65));ctx.fillStyle=q<20?palette.qLow:palette.qHigh;ctx.fillRect(px-bw/2,314-q/qmax*50,bw,q/qmax*50);if(hi-lo<=50&&(width/(hi-lo)>12||i%5===0)){ctx.fillStyle=palette.label;ctx.font='8px system-ui';ctx.fillText(String(q),px,261);}}
     }
     // A deletion has no AB1 peak. Mark the boundary, not a neighboring base.
     if(aligned){
@@ -172,8 +187,8 @@
         const a=columns[start-1]?.readIndex0,b=columns[j+1]?.readIndex0;
         if(a==null||b==null||a<lo||a>=hi||b<lo||b>=hi)continue;
         const px=(x(peaks[a])+x(peaks[b]))/2;
-        ctx.strokeStyle='#6941a5';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,32);ctx.lineTo(px,68);ctx.stroke();
-        ctx.fillStyle='#6941a5';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('D'+(j-start+1),px,9);
+        ctx.strokeStyle=palette.deletion;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,32);ctx.lineTo(px,68);ctx.stroke();
+        ctx.fillStyle=palette.deletion;ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('D'+(j-start+1),px,9);
       }
     }
     text('trace-alignment-note',aligned?(reverse?'Cromatogramma e campione in reverse complement, nel verso rCRS. Le posizioni AB1 originali decrescono.':'Cromatogramma e campione nel verso rCRS (forward).')+' Riga Reference = basi rCRS allineate; · = base AB1 non allineata; − = gap nella reference. Viola = differenza o ambiguità; D = delezione tra picchi (dettagli nella tabella allineamento).':state.result?'Allineamento non accettato: confronto non mostrato nel cromatogramma.':'Reference e campione allineato disponibili dopo l’allineamento.');
@@ -186,7 +201,7 @@
     const shown=traceReversed()?Core.reverseComplement(read.sequence[i]):read.sequence[i];
     const fields=[['Base visualizzata',shown],['Posizione AB1',String(i+1)],['Phred originale',q===undefined?'assente':'Q'+q],['P(errore) nominale',q===undefined?'—':(100*Math.pow(10,-q/10)).toLocaleString('it-IT',{maximumSignificantDigits:3})+'%'],['Posizione rCRS',c?(c.rcrsPos===null?'inserzione':String(c.rcrsPos)):'non allineata'],['Posizione FASTA',c?(c.fastaPos===null?'inserzione':String(c.fastaPos)):'—']];
     if(c&&state.result.summary.accepted)fields.push(['Base reference (rCRS)',c.refBase],['Campione nel verso rCRS',c.readBase]);
-    box.replaceChildren();fields.forEach(([label,value],index)=>{const item=element('div',undefined,'inspect-item');item.append(element('small',label));const strong=element('strong',value,index===0?'base-large':'');if(index===0)strong.style.color=colors[shown]||'#8b7b89';item.append(strong);box.append(item);});
+    box.replaceChildren();fields.forEach(([label,value],index)=>{const item=element('div',undefined,'inspect-item');item.append(element('small',label));const strong=element('strong',value,index===0?'base-large':'');if(index===0)strong.style.color=colors[shown]||palette.amb;item.append(strong);box.append(item);});
     if(traceReversed())box.append(element('span','Base nel file AB1 originale: '+read.sequence[i]+'. La traccia visualizzata è in reverse complement.','small muted'));
   }
   function jumpToRead(index) {
@@ -244,7 +259,7 @@
     if(!state.result)return;const columns=state.result.columns,size=40;const max=Math.max(0,Math.floor((columns.length-1)/size));state.alignmentPage=Math.max(0,Math.min(max,state.alignmentPage));
     const start=state.alignmentPage*size,end=Math.min(start+size,columns.length),slice=columns.slice(start,end);text('align-range',`Colonne ${start+1}–${end} / ${columns.length}`);$('align-prev').disabled=state.alignmentPage===0;$('align-next').disabled=state.alignmentPage===max;
     const table=element('table',undefined,'alignment-grid');const body=element('tbody');
-    for(const row of [{name:'rCRS',key:'rcrsPos',coord:true},{name:'FASTA',key:'fastaPos',coord:true},{name:'Reference',key:'refBase'},{name:'Lettura',key:'readBase'},{name:'Q',key:'quality'},{name:'AB1',key:'readPos',coord:true}]){const tr=element('tr');tr.append(element('th',row.name,'row-name'));for(const c of slice){let val=c[row.key];if(val===null)val=row.key.includes('Pos')&&c.op==='I'?'+':'−';const td=element('td',String(val),(row.coord?'coord ':'')+(['X','I','D','?'].includes(c.op)?'mismatch ':'')+(c.lowQuality?'lowq ':'')+(c.rcrsPos===1?'origin-cell ':'')+(c.readIndex0!==null?'base-click':''));if(row.key==='readBase'||row.key==='refBase')td.style.color=colors[c[row.key]]||'#787471';if(c.readIndex0!==null)td.addEventListener('click',()=>jumpToRead(c.readIndex0));tr.append(td);}body.append(tr);}table.append(body);$('alignment-grid').replaceChildren(table);
+    for(const row of [{name:'rCRS',key:'rcrsPos',coord:true},{name:'FASTA',key:'fastaPos',coord:true},{name:'Reference',key:'refBase'},{name:'Lettura',key:'readBase'},{name:'Q',key:'quality'},{name:'AB1',key:'readPos',coord:true}]){const tr=element('tr');tr.append(element('th',row.name,'row-name'));for(const c of slice){let val=c[row.key];if(val===null)val=row.key.includes('Pos')&&c.op==='I'?'+':'−';const td=element('td',String(val),(row.coord?'coord ':'')+(['X','I','D','?'].includes(c.op)?'mismatch ':'')+(c.lowQuality?'lowq ':'')+(c.rcrsPos===1?'origin-cell ':'')+(c.readIndex0!==null?'base-click':''));if(row.key==='readBase'||row.key==='refBase')td.style.color=colors[c[row.key]]||palette.amb;if(c.readIndex0!==null)td.addEventListener('click',()=>jumpToRead(c.readIndex0));tr.append(td);}body.append(tr);}table.append(body);$('alignment-grid').replaceChildren(table);
   }
   function download(name,content,type='text/plain;charset=utf-8') {
     const url=URL.createObjectURL(new Blob([content],{type}));const a=element('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -299,6 +314,8 @@
   for(const kind of ['fasta','alignment','variants','quality','report'])$('export-'+kind).addEventListener('click',()=>exportResults(kind));
   const drop=$('read-drop');for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('dragging');});
   for(const name of ['dragleave','drop'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.remove('dragging');if(name==='drop')loadRead(e.dataTransfer.files[0]);});
+  $('theme-toggle').addEventListener('click',()=>{const next=document.documentElement.dataset.theme==='dark'?'light':'dark';applyTheme(next);savePreference('sangerlab-theme',next);});
+  applyTheme(readPreference('sangerlab-theme')==='dark'?'dark':'light');
   new ResizeObserver(()=>drawTrace()).observe($('trace-canvas'));
   setReference({name:bundled.name,sequence:bundled.sequence});
   // Read-only snapshot for reproducible browser QA; no internal ABI metadata exposed.
