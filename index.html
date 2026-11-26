@@ -1,0 +1,870 @@
+<!doctype html>
+<!--
+MIT License
+
+Copyright (c) 2026 SangerLab contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+The ABIF parser is adapted from Sanger Viewer, Copyright (c) 2026 Animesh,
+also licensed under MIT. See THIRD_PARTY_NOTICES.txt and src/abif.js.
+
+-->
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6941a5">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>SangerLab · D-loop e coordinate rCRS</title>
+  <style>:root{--ink:#252333;--muted:#656274;--green:#6941a5;--green-dark:#4e2c82;--mint:#f0eaf8;--paper:#f4f3f7;--border:#dcd9e4;--a:#19854b;--c:#326fbe;--g:#334155;--t:#c94652;--amber:#986119;--amber-bg:#fff5df;--danger:#ae3c3c;--font:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;font-family:var(--font);color:var(--ink);background:var(--paper);font-size:15px;line-height:1.5}button,input,select{font:inherit}button,label.file-button,summary{touch-action:manipulation}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #b37d2c;outline-offset:3px}button{cursor:pointer}button:disabled,input:disabled{opacity:.45;cursor:not-allowed}a{color:var(--green)}[hidden]{display:none!important}.topbar{border-bottom:1px solid var(--border);background:#fff}.topinner{max-width:1280px;margin:auto;padding:19px 32px;display:flex;justify-content:space-between;align-items:center}.brand{display:flex;gap:12px;align-items:center;font-size:23px;font-weight:720;letter-spacing:-.7px;text-decoration:none;color:var(--ink)}.brand svg{width:40px;height:40px}.brand small{display:block;font-size:8px;font-weight:650;letter-spacing:1.9px;line-height:1.7}.header-tags{display:flex;gap:12px;align-items:center;font-size:11px}.version{border:1px solid var(--border);padding:6px 9px;border-radius:5px;letter-spacing:1px;color:var(--muted)}.local-badge{display:flex;gap:6px;align-items:center}.local-badge span{color:#27906c;font-size:9px}main{max-width:1280px;margin:auto;padding:0 32px}.hero{display:grid;grid-template-columns:1.5fr 1fr;gap:50px;align-items:center;padding:46px 0 34px}.eyebrow{font-size:10px;font-weight:750;letter-spacing:1.6px;text-transform:uppercase;color:var(--green);margin:0 0 9px}h1{font-size:clamp(30px,3.45vw,43px);font-weight:650;letter-spacing:-1.5px;line-height:1.15;margin:0 0 15px}h1 em{font-style:normal;color:var(--green)}.intro{max-width:650px;color:var(--muted);line-height:1.7;font-size:14px;margin:0}.reference-hero{border-left:1px solid var(--border);padding-left:30px;display:flex;gap:15px;align-items:center}.circle-wrap{width:125px;flex-shrink:0}.reference-hero .eyebrow{font-size:9px;letter-spacing:1px}.reference-route{font-size:19px;line-height:1.4;font-weight:600;letter-spacing:.1px;margin:4px 0 9px}.reference-route span{color:var(--green)}.small{font-size:12px}.muted{color:var(--muted)}.status{border:1px solid #d6cbe7;background:#f3eef9;border-radius:8px;padding:12px 16px;font-size:13px;margin:0 0 22px;overflow-wrap:anywhere}.status.error{background:#fff0ed;border-color:#ebc1b8;color:#8b3030}.status.busy{background:#fff5df;border-color:#eddbb6}.card{background:white;border:1px solid var(--border);border-radius:13px;padding:25px 27px;margin-bottom:22px}.section-head{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:20px}.section-head .eyebrow{margin-bottom:3px}h2{font-size:20px;line-height:1.3;font-weight:650;letter-spacing:-.4px;margin:0}h3{font-size:14px;margin:0;font-weight:650}.file-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.file-box{display:flex;gap:14px;align-items:center;border:1px dashed #cfc5dd;background:#faf9fc;border-radius:8px;padding:16px;min-width:0;position:relative}.file-icon{color:var(--green);border:1px solid #d5c8e7;background:#f2edf9;border-radius:6px;padding:11px 7px;font-size:10px;font-weight:750;letter-spacing:.5px;flex-shrink:0}.file-icon.secondary{color:#566b73;background:#edf2f2;border-color:#d2dddd}.file-info{min-width:0;flex:1}.file-info h3{overflow-wrap:anywhere}.file-info p{font-size:11px;margin:4px 0 0;color:var(--muted)}.button{border:1px solid #cec9d9;border-radius:6px;background:white;color:var(--ink);padding:10px 15px;min-height:44px;font-weight:600;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;white-space:nowrap;transition:background .12s}.button:hover:not(:disabled){background:#f3eef9;border-color:#a88bca}.button.primary{background:var(--green);color:white;border-color:var(--green)}.button.primary:hover:not(:disabled){background:var(--green-dark)}.button.quiet{border-color:transparent;background:transparent;color:var(--muted)}.small-button{min-height:38px;padding:6px 11px;font-size:11px}.square{width:44px;padding:10px}.file-input{position:absolute;left:0;bottom:0;width:1px;height:1px;opacity:0}.file-box:focus-within{outline:2px solid #a88bca;outline-offset:2px}.reference-details{margin:12px 0 20px;font-size:12px;color:var(--muted)}summary{cursor:pointer;font-weight:600;min-height:34px;padding:7px 0}details p{line-height:1.7}.controls-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr 1.5fr;gap:17px;border-top:1px solid #e8e5ee;padding-top:20px}.field{display:flex;flex-direction:column;gap:7px;font-size:11px;font-weight:650}.field span{font-size:10px;color:var(--muted);font-weight:400;line-height:1.5}input[type=number],select{border:1px solid #cec9d9;border-radius:6px;background:white;color:var(--ink);min-height:44px;padding:10px 11px;font-size:12px;width:100%;min-width:0}select{cursor:pointer}.action-row{display:flex;gap:10px;align-items:center;margin-top:21px;flex-wrap:wrap}.analyze{margin-left:auto;min-width:195px}.method-note{color:var(--muted);font-size:11px;margin:14px 0 0;line-height:1.6}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:22px}.stat{border:1px solid var(--border);border-radius:9px;padding:17px 20px;background:#fff;display:flex;flex-direction:column}.stat>span{font-size:11px;color:var(--muted);margin-bottom:4px}.stat strong{font-size:27px;letter-spacing:-.8px;font-weight:650;line-height:1.4;font-variant-numeric:tabular-nums}.stat small{font-size:10px;color:var(--muted);margin-top:4px}.stat .map-stat{font-size:20px;letter-spacing:-.4px;line-height:1.9}.legend{display:flex;gap:13px;font-size:12px;font-weight:650}.base-a{color:var(--a)}.base-c{color:var(--c)}.base-g{color:var(--g)}.base-t{color:var(--t)}.trace-toolbar{display:flex;gap:17px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.nav-buttons{display:flex;gap:6px}.inline-field{display:flex;align-items:center;gap:9px;font-size:11px;white-space:nowrap}.inline-field select{width:70px}.inline-field input{width:82px}#trace-range{margin-left:auto}.canvas-wrap{position:relative;width:100%;height:300px;border:1px solid #dedbe5;border-radius:7px;overflow:hidden;background:white}canvas{display:block;width:100%;height:300px;touch-action:pan-y;cursor:crosshair}.empty-overlay{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;flex-direction:column;pointer-events:none;background:#faf9fc}.empty-overlay p{font-size:12px;color:var(--muted);margin:7px 0}.empty-symbol{font-size:70px;line-height:.8;color:#9d85bf;margin-bottom:20px;font-weight:300}.slider-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:14px}input[type=range]{width:100%;margin:6px 0 12px;min-height:34px;accent-color:var(--green);touch-action:pan-y}.inspector{padding:14px 16px;min-height:64px;border:1px solid #ddd5e8;background:#f8f6fc;border-radius:7px;font-size:12px;display:flex;gap:25px;align-items:center;flex-wrap:wrap}.inspect-item{display:flex;flex-direction:column;gap:2px}.inspect-item small{color:var(--muted);font-size:10px}.inspect-item strong{font-size:14px;font-variant-numeric:tabular-nums}.inspect-item .base-large{font-size:27px;line-height:1.3}.trace-foot{display:flex;justify-content:space-between;gap:12px;font-size:10px;color:var(--muted);margin-top:12px}.pill{border-radius:5px;padding:6px 10px;background:#eeebf3;color:var(--muted);font-size:11px;white-space:nowrap}.pill.ok{color:var(--green);background:#eee6f7}.pill.warn{color:var(--amber);background:var(--amber-bg)}.result-empty{padding:24px 0;color:var(--muted);font-size:13px}.alignment-summary{display:flex;gap:12px 25px;flex-wrap:wrap;font-size:12px;margin-bottom:15px}.alignment-summary strong{font-weight:650;color:var(--green)}.result-warnings>p{padding:9px 12px;font-size:12px;background:var(--amber-bg);color:#79531b;border-left:3px solid #d6aa56;margin:8px 0}.results-tabs{display:flex;gap:20px;border-bottom:1px solid var(--border);margin-top:21px}.tab{border:0;background:transparent;color:var(--muted);padding:13px 0;min-height:48px;font-size:12px;font-weight:650;border-bottom:2px solid transparent}.tab.active{color:var(--green);border-bottom-color:var(--green)}.tab span{padding:1px 6px;border-radius:4px;background:#eee8f5;margin-left:5px}.table-scroll{overflow:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:7px}table{border-collapse:collapse;text-align:left;width:100%;font-size:12px}th{font-weight:650;font-size:10px;text-transform:uppercase;letter-spacing:.55px;color:var(--muted);background:#f6f4f9;padding:12px 13px;white-space:nowrap;border-bottom:1px solid var(--border)}td{padding:10px 13px;border-bottom:1px solid #eeecf3;vertical-align:middle;white-space:nowrap}tbody tr:last-child td{border-bottom:0}td.note-cell{white-space:normal;min-width:180px;max-width:280px;font-size:11px;color:var(--muted)}.variant-type{font-size:10px;font-weight:700;color:var(--green);background:#f0eaf8;padding:4px 7px;border-radius:4px}.variant-type.indel{color:#7a5219;background:#fff1d9}.low-quality{color:var(--danger);font-weight:650}.no-variants{padding:25px;background:#f1ecf8;text-align:center;font-size:13px;border-radius:7px}.alignment-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}.alignment-grid{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}.alignment-grid th,.alignment-grid td{text-align:center;padding:7px 5px;min-width:30px;white-space:nowrap}.alignment-grid th.row-name{position:sticky;left:0;z-index:1;background:#f2eff7;font-family:var(--font);min-width:85px;font-size:9px}.alignment-grid td.coord{font-size:8px;color:var(--muted);writing-mode:vertical-rl;height:45px;min-width:23px}.alignment-grid td.mismatch{background:#fff0cd}.alignment-grid td.lowq{border-bottom:2px dashed #bf6d45}.alignment-grid td.base-click{cursor:pointer}.alignment-grid td.origin-cell{border-left:3px solid #6941a5}.export-row{display:flex;flex-wrap:wrap;gap:9px;align-items:center;border-top:1px solid var(--border);margin-top:25px;padding-top:20px}.export-row .eyebrow{margin:0 9px 0 0}.notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.notes{padding:17px 22px;margin-bottom:0}.notes summary{font-size:12px;color:var(--ink)}.notes p{font-size:11px;color:var(--muted);margin:9px 0}.notes a{word-break:break-word}footer{padding:27px 0;display:flex;justify-content:space-between;gap:12px;font-size:10px;color:var(--muted)}.dragging{outline:3px solid #9877c2;outline-offset:2px}.noscript{padding:30px}
+@media(max-width:1000px){.hero{gap:25px}.reference-hero{padding-left:20px;gap:5px}.circle-wrap{width:93px}.reference-route{font-size:17px}.file-box{flex-wrap:wrap}.file-button{margin-left:auto}.file-info{min-width:150px}.controls-grid{grid-template-columns:repeat(2,1fr)}.section-head>span{max-width:170px;text-align:right}.stats{gap:10px}.stat{padding:15px}.stat .map-stat{font-size:17px}.inspector{gap:15px}.action-row #trim-info{order:3;width:100%}.analyze{margin-left:auto}.trace-toolbar{gap:12px}#trace-range{width:100%;margin-left:0}.export-row .button{font-size:11px;padding:9px 12px}.reference-hero .small{font-size:10px}}
+@media(max-width:680px){main{padding:0 16px}.topinner{padding:15px 16px}.brand{font-size:21px}.brand small{font-size:6.5px}.brand svg{width:34px;height:34px}.header-tags{gap:7px}.version{font-size:8px;padding:5px}.local-badge{font-size:0}.local-badge span{font-size:10px}.hero{grid-template-columns:1fr;gap:23px;padding:29px 0 25px}h1{font-size:32px}.intro{font-size:13px}.reference-hero{border-left:0;border-top:1px solid var(--border);padding:17px 0 0;gap:18px}.circle-wrap{width:85px}.reference-route{font-size:17px}.reference-hero .eyebrow{margin:0}.reference-hero .small{font-size:11px}.reference-route br{display:none}.reference-route span::before{content:" → "}.reference-route{margin:4px 0}.card{padding:20px 16px;border-radius:10px}.section-head{gap:10px;align-items:flex-start}.section-head>span{display:none}h2{font-size:18px}.file-grid{grid-template-columns:1fr;gap:12px}.file-info{min-width:100px}.file-box{padding:13px;gap:10px;flex-wrap:nowrap}.file-button{font-size:10px;padding:9px}.controls-grid{gap:16px 12px}.field{font-size:10px}.field select{font-size:11px}.field span{font-size:9px}.action-row{gap:7px}.action-row .button{font-size:11px;padding:10px}.analyze{width:100%;margin:8px 0 0;order:4}.stats{grid-template-columns:1fr 1fr}.stat strong{font-size:26px}.stat .map-stat{font-size:19px}.legend{gap:8px;font-size:10px}.trace-toolbar{gap:11px}.jump-field{width:100%}.jump-field input{flex:1;max-width:100px}.trace-foot{flex-direction:column;gap:5px}.inspector{gap:13px 20px}.inspect-item strong{font-size:12px}.notes-grid{grid-template-columns:1fr;gap:14px}.notes{padding:15px 17px}.results-tabs{gap:15px}.tab{font-size:11px}.export-row .button{flex:1}.export-row .eyebrow{width:100%;margin-bottom:3px}footer{font-size:9px;flex-direction:column;gap:5px}.alignment-nav .button{font-size:10px;padding:8px 10px}.alignment-nav #align-range{font-size:10px}.status{font-size:12px}.canvas-wrap,canvas{height:300px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* Compact scientific workstation theme; touch target sizes remain unchanged. */
+:root{--font:Arial,Helvetica,sans-serif}body{font-size:14px;line-height:1.45}.topbar{border-top:4px solid var(--green)}.topinner,main{max-width:1500px}.topinner{padding-top:12px;padding-bottom:12px}.brand{font-size:21px;letter-spacing:0}.brand small{font-size:9px;letter-spacing:.65px}.brand svg{width:32px;height:32px}.hero{padding:22px 0 18px;gap:24px}h1{font-size:26px;font-weight:600;letter-spacing:-.35px;margin-bottom:6px}.reference-hero{padding-left:20px}.circle-wrap{width:66px}.reference-route{font-size:14px;margin:2px 0}.reference-hero .eyebrow{letter-spacing:.3px}.eyebrow{letter-spacing:.5px;font-size:10px}.intro{font-size:13px;line-height:1.5}.card{border-radius:5px;padding:18px 20px;margin-bottom:16px}.section-head{margin-bottom:14px}h2{font-size:18px;letter-spacing:0;font-weight:600}.stats{gap:10px;margin-bottom:16px}.stat{border-radius:5px;padding:13px 16px;border-top:3px solid #b9a2d6}.stat strong{font-size:24px;letter-spacing:0}.stat>span{font-size:12px}.stat small{font-size:11px}.button,input[type=number],select{border-radius:4px;font-size:13px}.file-box,.canvas-wrap,.inspector,.status,.table-scroll{border-radius:4px}.trace-toolbar{background:#f6f4f9;border:1px solid var(--border);padding:8px 10px;gap:12px;margin-bottom:10px;border-radius:4px}.trace-card .section-head .eyebrow{display:none}.trace-card .section-head{border-bottom:1px solid var(--border);padding-bottom:12px}.inline-field{font-size:12px}.legend{font-weight:600;gap:12px}.slider-label{font-size:12px}.trace-foot{font-size:11px}.file-box{border-style:solid}.reference-hero .small{margin:4px 0}.empty-symbol{display:none}.status{margin-bottom:16px}.version{letter-spacing:0}.trace-card .canvas-wrap{border-color:#c9c4d2}.local-badge span{color:#27906c}@media(max-width:680px){.hero{gap:12px;padding:16px 0}.hero h1{font-size:23px}.card{padding:14px 12px}.trace-toolbar{gap:8px}.stat{padding:10px}.stat strong{font-size:22px}.brand small{font-size:7px}.reference-hero{padding-left:0}.legend{gap:7px}}
+</style>
+</head>
+<body>
+  <header class="topbar"><div class="topinner">
+    <a class="brand" href="#main" aria-label="SangerLab, inizio">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#6941a5"/><path d="M7 28c5 0 3-18 8-18s3 18 7 18 3-12 8-12h3" fill="none" stroke="white" stroke-width="2.2"/><path d="M7 28c5 0 7-9 11-9s6 9 15 9" fill="none" stroke="#d9c7f2" stroke-width="1.8"/></svg>
+      <span>SangerLab<small>GENETICA DELLA CONSERVAZIONE</small></span>
+    </a>
+    <div class="header-tags"><span class="version">0.1 · UI viola</span><span class="local-badge"><span aria-hidden="true">●</span> Analisi locale</span></div>
+  </div></header>
+  <main id="main">
+    <section class="hero">
+      <div><h1>Analisi di sequenze Sanger</h1><p class="intro">Controllo qualità, trimming e allineamento del DNA mitocondriale umano alla rCRS.</p></div>
+      <aside class="reference-hero"><div class="circle-wrap"><svg viewBox="0 0 130 130" aria-label="Il DNA mitocondriale è circolare"><circle cx="65" cy="65" r="48" fill="none" stroke="#e6dff0" stroke-width="7"/><path d="M48.6 19.9 A48 48 0 0 1 81.4 19.9" fill="none" stroke="#6941a5" stroke-width="7" stroke-linecap="round"/><line x1="65" y1="9" x2="65" y2="26" stroke="#bd722a" stroke-width="2"/><text x="65" y="61" text-anchor="middle" fill="#252333" font-size="17" font-weight="650">mtDNA</text><text x="65" y="79" text-anchor="middle" fill="#656274" font-size="11">16.569 posizioni</text></svg></div><div><p class="eyebrow">REFERENCE CIRCOLARE</p><p class="reference-route">15.990 → 16.569<br><span>1 → 15.989</span></p><p class="small muted">Reference iniziale: rCRS_15990<br>NC_012920.1 · rotazione verificata</p></div></aside>
+    </section>
+
+    <div id="status" class="status" role="status" aria-live="polite">Carica un file .ab1 per cominciare. La reference rCRS ruotata è già disponibile.</div>
+
+    <section class="card setup" aria-labelledby="setup-title">
+      <div class="section-head"><div><p class="eyebrow">01</p><h2 id="setup-title">File e parametri di analisi</h2></div><span class="muted small">File elaborati in memoria, senza invio a server</span></div>
+      <div class="file-grid">
+        <div class="file-box" id="read-drop"><div class="file-icon">AB1</div><div class="file-info"><h3 id="read-name">Cromatogramma Sanger</h3><p id="read-meta">Apri il file originale prodotto dal sequenziatore.</p></div><label class="button primary file-button" for="ab1-file">Apri .ab1</label><input id="ab1-file" class="file-input" type="file" accept=".ab1,.abi" aria-label="Carica cromatogramma AB1"></div>
+        <div class="file-box"><div class="file-icon secondary">FA</div><div class="file-info"><h3 id="reference-name">rCRS_15990</h3><p id="reference-meta">16.569 posizioni · origine rCRS 15.990</p></div><label class="button file-button" for="fasta-file">Cambia FASTA</label><input id="fasta-file" class="file-input" type="file" accept=".fasta,.fa,.fna,.fas,.txt" aria-label="Carica reference FASTA"></div>
+      </div>
+      <details class="reference-details"><summary>Come viene verificata la reference?</summary><p>Il FASTA deve contenere la rCRS completa NC_012920.1, originale o ruotata. La sequenza viene confrontata base per base con la rCRS inclusa nel tool: l'origine viene ricavata dalla sequenza, mai dal solo nome. Si conserva anche la N convenzionale in posizione 3107. Reference differenti o frammentarie sono rifiutate in questa versione.</p><p id="coordinate-example"></p><button id="restore-reference" class="button small-button">Ripristina rCRS_15990</button></details>
+      <div class="controls-grid">
+        <label class="field">Trimming automatico<select id="cutoff"><option value="0.01" selected>Mott · p = 0,01</option><option value="0.05">Mott · p = 0,05</option><option value="0.001">Mott · p = 0,001</option></select><span>Seleziona il segmento con miglior qualità cumulativa.</span></label>
+        <label class="field">Prima base conservata<input type="number" id="trim-start" min="1" value="1" inputmode="numeric" disabled><span>Posizione originale AB1, inclusa.</span></label>
+        <label class="field">Ultima base conservata<input type="number" id="trim-end" min="1" value="1" inputmode="numeric" disabled><span>Posizione originale AB1, inclusa.</span></label>
+        <label class="field">Orientamento<select id="orientation"><option value="auto">Automatico · confronta entrambi</option><option value="forward">Come nel file AB1</option><option value="reverse">Reverse complement</option></select><span>L'allineamento segue il verso della reference.</span></label>
+      </div>
+      <div class="action-row"><button id="auto-trim" class="button" disabled>Ricalcola trimming</button><button id="reset-trim" class="button quiet" disabled>Conserva tutte le basi</button><span id="trim-info" class="small muted">Il trimming sarà proposto al caricamento.</span><button id="analyze" class="button primary analyze" disabled>Allinea alla rCRS <span aria-hidden="true">→</span></button></div>
+      <p class="method-note">Il trimming Mott rimuove le estremità sfavorevoli: può conservare singole basi con Q bassa all'interno del segmento. Nessuna base viene corretta automaticamente.</p>
+    </section>
+
+    <section class="stats" aria-label="Riepilogo analisi"><div class="stat"><span>Lettura originale</span><strong id="stat-length">—</strong><small id="stat-length-note">basi chiamate nel file</small></div><div class="stat"><span>Segmento conservato</span><strong id="stat-trim">—</strong><small id="stat-trim-note">dopo il trimming</small></div><div class="stat"><span>Qualità nel segmento</span><strong id="stat-q">—</strong><small id="stat-q-note">percentuale di basi con Q ≥ 20</small></div><div class="stat"><span>Coordinate rCRS</span><strong id="stat-map" class="map-stat">—</strong><small id="stat-map-note">disponibili dopo l'allineamento</small></div></section>
+
+    <section class="card trace-card" aria-labelledby="trace-title">
+      <div class="section-head"><div><p class="eyebrow">02</p><h2 id="trace-title">Cromatogramma e qualità</h2></div><div class="legend"><span class="base-a">● A</span><span class="base-c">● C</span><span class="base-g">● G</span><span class="base-t">● T</span></div></div>
+      <div class="trace-toolbar"><div class="nav-buttons"><button id="prev-trace" class="button square" aria-label="Tratto precedente" disabled>←</button><button id="next-trace" class="button square" aria-label="Tratto successivo" disabled>→</button></div><label class="inline-field">Basi in vista<select id="view-count"><option>30</option><option selected>50</option><option>80</option><option>120</option></select></label><label class="inline-field jump-field">Vai alla base AB1<input type="number" id="jump-base" value="1" min="1" inputmode="numeric" disabled><button id="jump-button" class="button" disabled>Vai</button></label><span id="trace-range" class="small muted">In attesa di un cromatogramma</span></div>
+      <div class="canvas-wrap"><canvas id="trace-canvas" aria-label="Cromatogramma, basi e barre di qualità. Tocca un picco per leggere i dettagli."></canvas><div id="trace-empty" class="empty-overlay"><div class="empty-symbol" aria-hidden="true">∿</div><h3>Nessun cromatogramma caricato.</h3><p>Carica un .ab1 e tocca una base per ispezionarla.</p></div></div>
+      <label class="slider-label" for="trace-slider">Scorri lungo la lettura<span id="slider-position"></span></label><input id="trace-slider" type="range" min="0" max="1" value="0" disabled aria-label="Posizione della finestra del cromatogramma">
+      <div id="base-inspector" class="inspector"><span class="muted">Seleziona una base nel cromatogramma. Le barre inferiori rappresentano i Phred score originali; la linea tratteggiata indica Q20.</span></div>
+      <div class="trace-foot"><span>Traccia sempre nel verso originale del file AB1.</span><span>Zone grigie = escluse dal trimming · Q &lt; 20 = qualità bassa</span></div>
+    </section>
+
+    <section class="card results-card" aria-labelledby="results-title"><div class="section-head"><div><p class="eyebrow">03</p><h2 id="results-title">Allineamento e differenze</h2></div><span id="alignment-state" class="pill">Da allineare</span></div>
+      <div id="result-empty" class="result-empty">Dopo il controllo del trimming, premi <strong>Allinea alla rCRS</strong>. Il programma cerca entrambe le orientazioni su una reference circolare.</div>
+      <div id="result-content" hidden>
+        <div id="alignment-summary" class="alignment-summary"></div><div id="result-warnings" class="result-warnings"></div>
+        <div class="results-tabs" role="tablist" aria-label="Risultati"><button id="tab-variants" class="tab active" role="tab" aria-selected="true" aria-controls="variants-panel">Differenze <span id="variant-count">0</span></button><button id="tab-alignment" class="tab" role="tab" aria-selected="false" aria-controls="alignment-panel">Allineamento base per base</button></div>
+        <div id="variants-panel" role="tabpanel" aria-labelledby="tab-variants"><p class="small muted">Differenze candidate rispetto alla reference. Tocca «Vedi picco» per tornare alla traccia. La qualità è quella della chiamata nel file, non una probabilità di variante.</p><div class="table-scroll"><table id="variants-table"><thead><tr><th>Tipo</th><th>rCRS</th><th>FASTA</th><th>Ref → lettura</th><th>Q</th><th>Valutazione</th><th>Traccia</th></tr></thead><tbody id="variants-body"></tbody></table></div><div id="no-variants" class="no-variants" hidden>Nessuna differenza nel segmento allineato.</div></div>
+        <div id="alignment-panel" role="tabpanel" aria-labelledby="tab-alignment" hidden><div class="alignment-nav"><button id="align-prev" class="button">← Precedenti</button><span id="align-range" class="small"></span><button id="align-next" class="button">Successive →</button></div><p class="small muted">Scorri orizzontalmente se necessario. Le celle gialle indicano differenze; quelle tratteggiate, qualità bassa. «+» = inserzione nella lettura; «−» = gap.</p><div class="table-scroll alignment-scroll" id="alignment-grid"></div></div>
+        <div class="export-row"><span class="eyebrow">ESPORTA</span><button id="export-fasta" class="button">Lettura FASTA</button><button id="export-alignment" class="button">Allineamento FASTA</button><button id="export-variants" class="button">Differenze TSV</button><button id="export-quality" class="button">Qualità TSV</button><button id="export-report" class="button">Report JSON</button></div>
+        <p class="method-note">Il FASTA contiene la lettura rifilata nell'orientamento della reference. Non è un consenso di più letture. Le regioni senza dati non vengono riempite con basi della reference.</p>
+      </div>
+    </section>
+
+    <section class="notes-grid"><details class="card notes" open><summary>Come leggere i risultati</summary><p>Una differenza è una candidata da controllare sul cromatogramma. Q20 corrisponde nominalmente a una probabilità di errore di chiamata dell'1%; Q30 allo 0,1%. Un Q elevato da solo non dimostra che una variante sia biologica.</p><p>Le inserzioni e le delezioni sono riportate con le basi di riferimento che le precedono e le seguono. Nelle ripetizioni, la posizione di un indel può non essere unica: la tabella non applica una nomenclatura mitocondriale standardizzata.</p></details><details class="card notes"><summary>Metodo, ambito e riproducibilità</summary><p>Allineamento semiglobale con gap affini: tutta la lettura conservata è allineata a un tratto della reference. Match +2, mismatch −3, apertura gap −6, estensione −1. La reference duplicata consente il passaggio attraverso l'origine; la numerazione viene poi riportata modulo 16.569.</p><p>Questa versione analizza una lettura alla volta. Non richiama i picchi, non misura l'eteroplasmia, non costruisce un consenso forward/reverse e non assegna aplogruppi. I Phred sono quelli già presenti nel file AB1.</p><p>Codice open source MIT. Parser adattato da <a href="https://github.com/animeshkundu/sanger-viewer" target="_blank" rel="noopener noreferrer">Sanger Viewer, Animesh</a>. Nessuna libreria esterna caricata, nessun account, nessun caricamento dei dati su server. Ricaricando la pagina si perde la sessione: esporta i risultati per conservarli.</p></details></section>
+    <footer><span>SangerLab · versione pilota 0.1 · 26 novembre 2026</span><span>Una base, una qualità, una coordinata.</span></footer>
+  </main>
+  <script id="sanger-reference" type="application/json">{"name": "rCRS_15990", "origin": 15990, "sequence": "CCAAAGCTAAGATTCTAATTTAAACTATTCTCTGTTCTTTCATGGGGAAGCAGATTTGGGTACCACCCAAGTATTGACTCACCCATCAACAACCGCTATGTATTTCGTACATTACTGCCAGCCACCATGAATATTGTACGGTACCATAAATACTTGACCACCTGTAGTACATAAAAACCCAATCCACATCAAAACCCCCTCCCCATGCTTACAAGCAAGTACAGCAATCAACCCTCAACTATCACACATCAACTGCAACTCCAAAGCCACCCCTCACCCACTAGGATACCAACAAACCTACCCACCCTTAACAGTACATAGTACATAAAGCCATTTACCGTACATAGCACATTACAGTCAAATCCCTTCTCGTCCCCATGGATGACCCCCCTCAGATAGGGGTCCCTTGACCACCATCCTCCGTGAAATCAATATCCCGCACAAGAGTGCTACTCTCCTCGCTCCGGGCCCATAACACTTGGGGGTAGCTAAAGTGAACTGTATCCGACATCTGGTTCCTACTTCAGGGTCATAAAGCCTAAATAGCCCACACGTTCCCCTTAAATAAGACATCACGATGGATCACAGGTCTATCACCCTATTAACCACTCACGGGAGCTCTCCATGCATTTGGTATTTTCGTCTGGGGGGTATGCACGCGATAGCATTGCGAGACGCTGGAGCCGGAGCACCCTATGTCGCAGTATCTGTCTTTGATTCCTGCCTCATCCTATTATTTATCGCACCTACGTTCAATATTACAGGCGAACATACTTACTAAAGTGTGTTAATTAATTAATGCTTGTAGGACATAATAATAACAATTGAATGTCTGCACAGCCACTTTCCACACAGACATCATAACAAAAAATTTCCACCAAACCCCCCCTCCCCCGCTTCTGGCCACAGCACTTAAACACATCTCTGCCAAACCCCAAAAACAAAGAACCCTAACACCAGCCTAACCAGATTTCAAATTTTATCTTTTGGCGGTATGCACTTTTAACAGTCACCCCCCAACTAACACATTATTTTCCCCTCCCACTCCCATACTACTAATCTCATCAATACAACCCCCGCCCATCCTACCCAGCACACACACACCGCTGCTAACCCCATACCCCGAACCAACCAAACCCCAAAGACACCCCCCACAGTTTATGTAGCTTACCTCCTCAAAGCAATACACTGAAAATGTTTAGACGGGCTCACATCACCCCATAAACAAATAGGTTTGGTCCTAGCCTTTCTATTAGCTCTTAGTAAGATTACACATGCAAGCATCCCCGTTCCAGTGAGTTCACCCTCTAAATCACCACGATCAAAAGGAACAAGCATCAAGCACGCAGCAATGCAGCTCAAAACGCTTAGCCTAGCCACACCCCCACGGGAAACAGCAGTGATTAACCTTTAGCAATAAACGAAAGTTTAACTAAGCTATACTAACCCCAGGGTTGGTCAATTTCGTGCCAGCCACCGCGGTCACACGATTAACCCAAGTCAATAGAAGCCGGCGTAAAGAGTGTTTTAGATCACCCCCTCCCCAATAAAGCTAAAACTCACCTGAGTTGTAAAAAACTCCAGTTGACACAAAATAGACTACGAAAGTGGCTTTAACATATCTGAACACACAATAGCTAAGACCCAAACTGGGATTAGATACCCCACTATGCTTAGCCCTAAACCTCAACAGTTAAATCAACAAAACTGCTCGCCAGAACACTACGAGCCACAGCTTAAAACTCAAAGGACCTGGCGGTGCTTCATATCCCTCTAGAGGAGCCTGTTCTGTAATCGATAAACCCCGATCAACCTCACCACCTCTTGCTCAGCCTATATACCGCCATCTTCAGCAAACCCTGATGAAGGCTACAAAGTAAGCGCAAGTACCCACGTAAAGACGTTAGGTCAAGGTGTAGCCCATGAGGTGGCAAGAAATGGGCTACATTTTCTACCCCAGAAAACTACGATAGCCCTTATGAAACTTAAGGGTCGAAGGTGGATTTAGCAGTAAACTAAGAGTAGAGTGCTTAGTTGAACAGGGCCCTGAAGCGCGTACACACCGCCCGTCACCCTCCTCAAGTATACTTCAAAGGACATTTAACTAAAACCCCTACGCATTTATATAGAGGAGACAAGTCGTAACATGGTAAGTGTACTGGAAAGTGCACTTGGACGAACCAGAGTGTAGCTTAACACAAAGCACCCAACTTACACTTAGGAGATTTCAACTTAACTTGACCGCTCTGAGCTAAACCTAGCCCCAAACCCACTCCACCTTACTACCAGACAACCTTAGCCAAACCATTTACCCAAATAAAGTATAGGCGATAGAAATTGAAACCTGGCGCAATAGATATAGTACCGCAAGGGAAAGATGAAAAATTATAACCAAGCATAATATAGCAAGGACTAACCCCTATACCTTCTGCATAATGAATTAACTAGAAATAACTTTGCAAGGAGAGCCAAAGCTAAGACCCCCGAAACCAGACGAGCTACCTAAGAACAGCTAAAAGAGCACACCCGTCTATGTAGCAAAATAGTGGGAAGATTTATAGGTAGAGGCGACAAACCTACCGAGCCTGGTGATAGCTGGTTGTCCAAGATAGAATCTTAGTTCAACTTTAAATTTGCCCACAGAACCCTCTAAATCCCCTTGTAAATTTAACTGTTAGTCCAAAGAGGAACAGCTCTTTGGACACTAGGAAAAAACCTTGTAGAGAGAGTAAAAAATTTAACACCCATAGTAGGCCTAAAAGCAGCCACCAATTAAGAAAGCGTTCAAGCTCAACACCCACTACCTAAAAAATCCCAAACATATAACTGAACTCCTCACACCCAATTGGACCAATCTATCACCCTATAGAAGAACTAATGTTAGTATAAGTAACATGAAAACATTCTCCTCCGCATAAGCCTGCGTCAGATTAAAACACTGAACTGACAATTAACAGCCCAATATCTACAATCAACCAACAAGTCATTATTACCCTCACTGTCAACCCAACACAGGCATGCTCATAAGGAAAGGTTAAAAAAAGTAAAAGGAACTCGGCAAATCTTACCCCGCCTGTTTACCAAAAACATCACCTCTAGCATCACCAGTATTAGAGGCACCGCCTGCCCAGTGACACATGTTTAACGGCCGCGGTACCCTAACCGTGCAAAGGTAGCATAATCACTTGTTCCTTAAATAGGGACCTGTATGAATGGCTCCACGAGGGTTCAGCTGTCTCTTACTTTTAACCAGTGAAATTGACCTGCCCGTGAAGAGGCGGGCATAACACAGCAAGACGAGAAGACCCTATGGAGCTTTAATTTATTAATGCAAACAGTACCTAACAAACCCACAGGTCCTAAACTACCAAACCTGCATTAAAAATTTCGGTTGGGGCGACCTCGGAGCAGAACCCAACCTCCGAGCAGTACATGCTAAGACTTCACCAGTCAAAGCGAACTACTATACTCAATTGATCCAATAACTTGACCAACGGAACAAGTTACCCTAGGGATAACAGCGCAATCCTATTCTAGAGTCCATATCAACAATAGGGTTTACGACCTCGATGTTGGATCAGGACATCCCGATGGTGCAGCCGCTATTAAAGGTTCGTTTGTTCAACGATTAAAGTCCTACGTGATCTGAGTTCAGACCGGAGTAATCCAGGTCGGTTTCTATCTACNTTCAAATTCCTCCCTGTACGAAAGGACAAGAGAAATAAGGCCTACTTCACAAAGCGCCTTCCCCCGTAAATGATATCATCTCAACTTAGTATTATACCCACACCCACCCAAGAACAGGGTTTGTTAAGATGGCAGAGCCCGGTAATCGCATAAAACTTAAAACTTTACAGTCAGAGGTTCAATTCCTCTTCTTAACAACATACCCATGGCCAACCTCCTACTCCTCATTGTACCCATTCTAATCGCAATGGCATTCCTAATGCTTACCGAACGAAAAATTCTAGGCTATATACAACTACGCAAAGGCCCCAACGTTGTAGGCCCCTACGGGCTACTACAACCCTTCGCTGACGCCATAAAACTCTTCACCAAAGAGCCCCTAAAACCCGCCACATCTACCATCACCCTCTACATCACCGCCCCGACCTTAGCTCTCACCATCGCTCTTCTACTATGAACCCCCCTCCCCATACCCAACCCCCTGGTCAACCTCAACCTAGGCCTCCTATTTATTCTAGCCACCTCTAGCCTAGCCGTTTACTCAATCCTCTGATCAGGGTGAGCATCAAACTCAAACTACGCCCTGATCGGCGCACTGCGAGCAGTAGCCCAAACAATCTCATATGAAGTCACCCTAGCCATCATTCTACTATCAACATTACTAATAAGTGGCTCCTTTAACCTCTCCACCCTTATCACAACACAAGAACACCTCTGATTACTCCTGCCATCATGACCCTTGGCCATAATATGATTTATCTCCACACTAGCAGAGACCAACCGAACCCCCTTCGACCTTGCCGAAGGGGAGTCCGAACTAGTCTCAGGCTTCAACATCGAATACGCCGCAGGCCCCTTCGCCCTATTCTTCATAGCCGAATACACAAACATTATTATAATAAACACCCTCACCACTACAATCTTCCTAGGAACAACATATGACGCACTCTCCCCTGAACTCTACACAACATATTTTGTCACCAAGACCCTACTTCTAACCTCCCTGTTCTTATGAATTCGAACAGCATACCCCCGATTCCGCTACGACCAACTCATACACCTCCTATGAAAAAACTTCCTACCACTCACCCTAGCATTACTTATATGATATGTCTCCATACCCATTACAATCTCCAGCATTCCCCCTCAAACCTAAGAAATATGTCTGATAAAAGAGTTACTTTGATAGAGTAAATAATAGGAGCTTAAACCCCCTTATTTCTAGGACTATGAGAATCGAACCCATCCCTGAGAATCCAAAATTCTCCGTGCCACCTATCACACCCCATCCTAAAGTAAGGTCAGCTAAATAAGCTATCGGGCCCATACCCCGAAAATGTTGGTTATACCCTTCCCGTACTAATTAATCCCCTGGCCCAACCCGTCATCTACTCTACCATCTTTGCAGGCACACTCATCACAGCGCTAAGCTCGCACTGATTTTTTACCTGAGTAGGCCTAGAAATAAACATGCTAGCTTTTATTCCAGTTCTAACCAAAAAAATAAACCCTCGTTCCACAGAAGCTGCCATCAAGTATTTCCTCACGCAAGCAACCGCATCCATAATCCTTCTAATAGCTATCCTCTTCAACAATATACTCTCCGGACAATGAACCATAACCAATACTACCAATCAATACTCATCATTAATAATCATAATAGCTATAGCAATAAAACTAGGAATAGCCCCCTTTCACTTCTGAGTCCCAGAGGTTACCCAAGGCACCCCTCTGACATCCGGCCTGCTTCTTCTCACATGACAAAAACTAGCCCCCATCTCAATCATATACCAAATCTCTCCCTCACTAAACGTAAGCCTTCTCCTCACTCTCTCAATCTTATCCATCATAGCAGGCAGTTGAGGTGGATTAAACCAAACCCAGCTACGCAAAATCTTAGCATACTCCTCAATTACCCACATAGGATGAATAATAGCAGTTCTACCGTACAACCCTAACATAACCATTCTTAATTTAACTATTTATATTATCCTAACTACTACCGCATTCCTACTACTCAACTTAAACTCCAGCACCACGACCCTACTACTATCTCGCACCTGAAACAAGCTAACATGACTAACACCCTTAATTCCATCCACCCTCCTCTCCCTAGGAGGCCTGCCCCCGCTAACCGGCTTTTTGCCCAAATGGGCCATTATCGAAGAATTCACAAAAAACAATAGCCTCATCATCCCCACCATCATAGCCACCATCACCCTCCTTAACCTCTACTTCTACCTACGCCTAATCTACTCCACCTCAATCACACTACTCCCCATATCTAACAACGTAAAAATAAAATGACAGTTTGAACATACAAAACCCACCCCATTCCTCCCCACACTCATCGCCCTTACCACGCTACTCCTACCTATCTCCCCTTTTATACTAATAATCTTATAGAAATTTAGGTTAAATACAGACCAAGAGCCTTCAAAGCCCTCAGTAAGTTGCAATACTTAATTTCTGTAACAGCTAAGGACTGCAAAACCCCACTCTGCATCAACTGAACGCAAATCAGCCACTTTAATTAAGCTAAGCCCTTACTAGACCAATGGGACTTAAACCCACAAACACTTAGTTAACAGCTAAGCACCCTAATCAACTGGCTTCAATCTACTTCTCCCGCCGCCGGGAAAAAAGGCGGGAGAAGCCCCGGCAGGTTTGAAGCTGCTTCTTCGAATTTGCAATTCAATATGAAAATCACCTCGGAGCTGGTAAAAAGAGGCCTAACCCCTGTCTTTAGATTTACAGTCCAATGCTTCACTCAGCCATTTTACCTCACCCCCACTGATGTTCGCCGACCGTTGACTATTCTCTACAAACCACAAAGACATTGGAACACTATACCTATTATTCGGCGCATGAGCTGGAGTCCTAGGCACAGCTCTAAGCCTCCTTATTCGAGCCGAGCTGGGCCAGCCAGGCAACCTTCTAGGTAACGACCACATCTACAACGTTATCGTCACAGCCCATGCATTTGTAATAATCTTCTTCATAGTAATACCCATCATAATCGGAGGCTTTGGCAACTGACTAGTTCCCCTAATAATCGGTGCCCCCGATATGGCGTTTCCCCGCATAAACAACATAAGCTTCTGACTCTTACCTCCCTCTCTCCTACTCCTGCTCGCATCTGCTATAGTGGAGGCCGGAGCAGGAACAGGTTGAACAGTCTACCCTCCCTTAGCAGGGAACTACTCCCACCCTGGAGCCTCCGTAGACCTAACCATCTTCTCCTTACACCTAGCAGGTGTCTCCTCTATCTTAGGGGCCATCAATTTCATCACAACAATTATCAATATAAAACCCCCTGCCATAACCCAATACCAAACGCCCCTCTTCGTCTGATCCGTCCTAATCACAGCAGTCCTACTTCTCCTATCTCTCCCAGTCCTAGCTGCTGGCATCACTATACTACTAACAGACCGCAACCTCAACACCACCTTCTTCGACCCCGCCGGAGGAGGAGACCCCATTCTATACCAACACCTATTCTGATTTTTCGGTCACCCTGAAGTTTATATTCTTATCCTACCAGGCTTCGGAATAATCTCCCATATTGTAACTTACTACTCCGGAAAAAAAGAACCATTTGGATACATAGGTATGGTCTGAGCTATGATATCAATTGGCTTCCTAGGGTTTATCGTGTGAGCACACCATATATTTACAGTAGGAATAGACGTAGACACACGAGCATATTTCACCTCCGCTACCATAATCATCGCTATCCCCACCGGCGTCAAAGTATTTAGCTGACTCGCCACACTCCACGGAAGCAATATGAAATGATCTGCTGCAGTGCTCTGAGCCCTAGGATTCATCTTTCTTTTCACCGTAGGTGGCCTGACTGGCATTGTATTAGCAAACTCATCACTAGACATCGTACTACACGACACGTACTACGTTGTAGCCCACTTCCACTATGTCCTATCAATAGGAGCTGTATTTGCCATCATAGGAGGCTTCATTCACTGATTTCCCCTATTCTCAGGCTACACCCTAGACCAAACCTACGCCAAAATCCATTTCACTATCATATTCATCGGCGTAAATCTAACTTTCTTCCCACAACACTTTCTCGGCCTATCCGGAATGCCCCGACGTTACTCGGACTACCCCGATGCATACACCACATGAAACATCCTATCATCTGTAGGCTCATTCATTTCTCTAACAGCAGTAATATTAATAATTTTCATGATTTGAGAAGCCTTCGCTTCGAAGCGAAAAGTCCTAATAGTAGAAGAACCCTCCATAAACCTGGAGTGACTATATGGATGCCCCCCACCCTACCACACATTCGAAGAACCCGTATACATAAAATCTAGACAAAAAAGGAAGGAATCGAACCCCCCAAAGCTGGTTTCAAGCCAACCCCATGGCCTCCATGACTTTTTCAAAAAGGTATTAGAAAAACCATTTCATAACTTTGTCAAAGTTAAATTATAGGCTAAATCCTATATATCTTAATGGCACATGCAGCGCAAGTAGGTCTACAAGACGCTACTTCCCCTATCATAGAAGAGCTTATCACCTTTCATGATCACGCCCTCATAATCATTTTCCTTATCTGCTTCCTAGTCCTGTATGCCCTTTTCCTAACACTCACAACAAAACTAACTAATACTAACATCTCAGACGCTCAGGAAATAGAAACCGTCTGAACTATCCTGCCCGCCATCATCCTAGTCCTCATCGCCCTCCCATCCCTACGCATCCTTTACATAACAGACGAGGTCAACGATCCCTCCCTTACCATCAAATCAATTGGCCACCAATGGTACTGAACCTACGAGTACACCGACTACGGCGGACTAATCTTCAACTCCTACATACTTCCCCCATTATTCCTAGAACCAGGCGACCTGCGACTCCTTGACGTTGACAATCGAGTAGTACTCCCGATTGAAGCCCCCATTCGTATAATAATTACATCACAAGACGTCTTGCACTCATGAGCTGTCCCCACATTAGGCTTAAAAACAGATGCAATTCCCGGACGTCTAAACCAAACCACTTTCACCGCTACACGACCGGGGGTATACTACGGTCAATGCTCTGAAATCTGTGGAGCAAACCACAGTTTCATGCCCATCGTCCTAGAATTAATTCCCCTAAAAATCTTTGAAATAGGGCCCGTATTTACCCTATAGCACCCCCTCTACCCCCTCTAGAGCCCACTGTAAAGCTAACTTAGCATTAACCTTTTAAGTTAAAGATTAAGAGAACCAACACCTCTTTACAGTGAAATGCCCCAACTAAATACTACCGTATGGCCCACCATAATTACCCCCATACTCCTTACACTATTCCTCATCACCCAACTAAAAATATTAAACACAAACTACCACCTACCTCCCTCACCAAAGCCCATAAAAATAAAAAATTATAACAAACCCTGAGAACCAAAATGAACGAAAATCTGTTCGCTTCATTCATTGCCCCCACAATCCTAGGCCTACCCGCCGCAGTACTGATCATTCTATTTCCCCCTCTATTGATCCCCACCTCCAAATATCTCATCAACAACCGACTAATCACCACCCAACAATGACTAATCAAACTAACCTCAAAACAAATGATAACCATACACAACACTAAAGGACGAACCTGATCTCTTATACTAGTATCCTTAATCATTTTTATTGCCACAACTAACCTCCTCGGACTCCTGCCTCACTCATTTACACCAACCACCCAACTATCTATAAACCTAGCCATGGCCATCCCCTTATGAGCGGGCACAGTGATTATAGGCTTTCGCTCTAAGATTAAAAATGCCCTAGCCCACTTCTTACCACAAGGCACACCTACACCCCTTATCCCCATACTAGTTATTATCGAAACCATCAGCCTACTCATTCAACCAATAGCCCTGGCCGTACGCCTAACCGCTAACATTACTGCAGGCCACCTACTCATGCACCTAATTGGAAGCGCCACCCTAGCAATATCAACCATTAACCTTCCCTCTACACTTATCATCTTCACAATTCTAATTCTACTGACTATCCTAGAAATCGCTGTCGCCTTAATCCAAGCCTACGTTTTCACACTTCTAGTAAGCCTCTACCTGCACGACAACACATAATGACCCACCAATCACATGCCTATCATATAGTAAAACCCAGCCCATGACCCCTAACAGGGGCCCTCTCAGCCCTCCTAATGACCTCCGGCCTAGCCATGTGATTTCACTTCCACTCCATAACGCTCCTCATACTAGGCCTACTAACCAACACACTAACCATATACCAATGATGGCGCGATGTAACACGAGAAAGCACATACCAAGGCCACCACACACCACCTGTCCAAAAAGGCCTTCGATACGGGATAATCCTATTTATTACCTCAGAAGTTTTTTTCTTCGCAGGATTTTTCTGAGCCTTTTACCACTCCAGCCTAGCCCCTACCCCCCAATTAGGAGGGCACTGGCCCCCAACAGGCATCACCCCGCTAAATCCCCTAGAAGTCCCACTCCTAAACACATCCGTATTACTCGCATCAGGAGTATCAATCACCTGAGCTCACCATAGTCTAATAGAAAACAACCGAAACCAAATAATTCAAGCACTGCTTATTACAATTTTACTGGGTCTCTATTTTACCCTCCTACAAGCCTCAGAGTACTTCGAGTCTCCCTTCACCATTTCCGACGGCATCTACGGCTCAACATTTTTTGTAGCCACAGGCTTCCACGGACTTCACGTCATTATTGGCTCAACTTTCCTCACTATCTGCTTCATCCGCCAACTAATATTTCACTTTACATCCAAACATCACTTTGGCTTCGAAGCCGCCGCCTGATACTGGCATTTTGTAGATGTGGTTTGACTATTTCTGTATGTCTCCATCTATTGATGAGGGTCTTACTCTTTTAGTATAAATAGTACCGTTAACTTCCAATTAACTAGTTTTGACAACATTCAAAAAAGAGTAATAAACTTCGCCTTAATTTTAATAATCAACACCCTCCTAGCCTTACTACTAATAATTATTACATTTTGACTACCACAACTCAACGGCTACATAGAAAAATCCACCCCTTACGAGTGCGGCTTCGACCCTATATCCCCCGCCCGCGTCCCTTTCTCCATAAAATTCTTCTTAGTAGCTATTACCTTCTTATTATTTGATCTAGAAATTGCCCTCCTTTTACCCCTACCATGAGCCCTACAAACAACTAACCTGCCACTAATAGTTATGTCATCCCTCTTATTAATCATCATCCTAGCCCTAAGTCTGGCCTATGAGTGACTACAAAAAGGATTAGACTGAACCGAATTGGTATATAGTTTAAACAAAACGAATGATTTCGACTCATTAAATTATGATAATCATATTTACCAAATGCCCCTCATTTACATAAATATTATACTAGCATTTACCATCTCACTTCTAGGAATACTAGTATATCGCTCACACCTCATATCCTCCCTACTATGCCTAGAAGGAATAATACTATCGCTGTTCATTATAGCTACTCTCATAACCCTCAACACCCACTCCCTCTTAGCCAATATTGTGCCTATTGCCATACTAGTCTTTGCCGCCTGCGAAGCAGCGGTGGGCCTAGCCCTACTAGTCTCAATCTCCAACACATATGGCCTAGACTACGTACATAACCTAAACCTACTCCAATGCTAAAACTAATCGTCCCAACAATTATATTACTACCACTGACATGACTTTCCAAAAAACACATAATTTGAATCAACACAACCACCCACAGCCTAATTATTAGCATCATCCCTCTACTATTTTTTAACCAAATCAACAACAACCTATTTAGCTGTTCCCCAACCTTTTCCTCCGACCCCCTAACAACCCCCCTCCTAATACTAACTACCTGACTCCTACCCCTCACAATCATGGCAAGCCAACGCCACTTATCCAGTGAACCACTATCACGAAAAAAACTCTACCTCTCTATACTAATCTCCCTACAAATCTCCTTAATTATAACATTCACAGCCACAGAACTAATCATATTTTATATCTTCTTCGAAACCACACTTATCCCCACCTTGGCTATCATCACCCGATGAGGCAACCAGCCAGAACGCCTGAACGCAGGCACATACTTCCTATTCTACACCCTAGTAGGCTCCCTTCCCCTACTCATCGCACTAATTTACACTCACAACACCCTAGGCTCACTAAACATTCTACTACTCACTCTCACTGCCCAAGAACTATCAAACTCCTGAGCCAACAACTTAATATGACTAGCTTACACAATAGCTTTTATAGTAAAGATACCTCTTTACGGACTCCACTTATGACTCCCTAAAGCCCATGTCGAAGCCCCCATCGCTGGGTCAATAGTACTTGCCGCAGTACTCTTAAAACTAGGCGGCTATGGTATAATACGCCTCACACTCATTCTCAACCCCCTGACAAAACACATAGCCTACCCCTTCCTTGTACTATCCCTATGAGGCATAATTATAACAAGCTCCATCTGCCTACGACAAACAGACCTAAAATCGCTCATTGCATACTCTTCAATCAGCCACATAGCCCTCGTAGTAACAGCCATTCTCATCCAAACCCCCTGAAGCTTCACCGGCGCAGTCATTCTCATAATCGCCCACGGGCTTACATCCTCATTACTATTCTGCCTAGCAAACTCAAACTACGAACGCACTCACAGTCGCATCATAATCCTCTCTCAAGGACTTCAAACTCTACTCCCACTAATAGCTTTTTGATGACTTCTAGCAAGCCTCGCTAACCTCGCCTTACCCCCCACTATTAACCTACTGGGAGAACTCTCTGTGCTAGTAACCACGTTCTCCTGATCAAATATCACTCTCCTACTTACAGGACTCAACATACTAGTCACAGCCCTATACTCCCTCTACATATTTACCACAACACAATGGGGCTCACTCACCCACCACATTAACAACATAAAACCCTCATTCACACGAGAAAACACCCTCATGTTCATACACCTATCCCCCATTCTCCTCCTATCCCTCAACCCCGACATCATTACCGGGTTTTCCTCTTGTAAATATAGTTTAACCAAAACATCAGATTGTGAATCTGACAACAGAGGCTTACGACCCCTTATTTACCGAGAAAGCTCACAAGAACTGCTAACTCATGCCCCCATGTCTAACAACATGGCTTTCTCAACTTTTAAAGGATAACAGCTATCCATTGGTCTTAGGCCCCAAAAATTTTGGTGCAACTCCAAATAAAAGTAATAACCATGCACACTACTATAACCACCCTAACCCTGACTTCCCTAATTCCCCCCATCCTTACCACCCTCGTTAACCCTAACAAAAAAAACTCATACCCCCATTATGTAAAATCCATTGTCGCATCCACCTTTATTATCAGTCTCTTCCCCACAACAATATTCATGTGCCTAGACCAAGAAGTTATTATCTCGAACTGACACTGAGCCACAACCCAAACAACCCAGCTCTCCCTAAGCTTCAAACTAGACTACTTCTCCATAATATTCATCCCTGTAGCATTGTTCGTTACATGGTCCATCATAGAATTCTCACTGTGATATATAAACTCAGACCCAAACATTAATCAGTTCTTCAAATATCTACTCATCTTCCTAATTACCATACTAATCTTAGTTACCGCTAACAACCTATTCCAACTGTTCATCGGCTGAGAGGGCGTAGGAATTATATCCTTCTTGCTCATCAGTTGATGATACGCCCGAGCAGATGCCAACACAGCAGCCATTCAAGCAATCCTATACAACCGTATCGGCGATATCGGTTTCATCCTCGCCTTAGCATGATTTATCCTACACTCCAACTCATGAGACCCACAACAAATAGCCCTTCTAAACGCTAATCCAAGCCTCACCCCACTACTAGGCCTCCTCCTAGCAGCAGCAGGCAAATCAGCCCAATTAGGTCTCCACCCCTGACTCCCCTCAGCCATAGAAGGCCCCACCCCAGTCTCAGCCCTACTCCACTCAAGCACTATAGTTGTAGCAGGAATCTTCTTACTCATCCGCTTCCACCCCCTAGCAGAAAATAGCCCACTAATCCAAACTCTAACACTATGCTTAGGCGCTATCACCACTCTGTTCGCAGCAGTCTGCGCCCTTACACAAAATGACATCAAAAAAATCGTAGCCTTCTCCACTTCAAGTCAACTAGGACTCATAATAGTTACAATCGGCATCAACCAACCACACCTAGCATTCCTGCACATCTGTACCCACGCCTTCTTCAAAGCCATACTATTTATGTGCTCCGGGTCCATCATCCACAACCTTAACAATGAACAAGATATTCGAAAAATAGGAGGACTACTCAAAACCATACCTCTCACTTCAACCTCCCTCACCATTGGCAGCCTAGCATTAGCAGGAATACCTTTCCTCACAGGTTTCTACTCCAAAGACCACATCATCGAAACCGCAAACATATCATACACAAACGCCTGAGCCCTATCTATTACTCTCATCGCTACCTCCCTGACAAGCGCCTATAGCACTCGAATAATTCTTCTCACCCTAACAGGTCAACCTCGCTTCCCCACCCTTACTAACATTAACGAAAATAACCCCACCCTACTAAACCCCATTAAACGCCTGGCAGCCGGAAGCCTATTCGCAGGATTTCTCATTACTAACAACATTTCCCCCGCATCCCCCTTCCAAACAACAATCCCCCTCTACCTAAAACTCACAGCCCTCGCTGTCACTTTCCTAGGACTTCTAACAGCCCTAGACCTCAACTACCTAACCAACAAACTTAAAATAAAATCCCCACTATGCACATTTTATTTCTCCAACATACTCGGATTCTACCCTAGCATCACACACCGCACAATCCCCTATCTAGGCCTTCTTACGAGCCAAAACCTGCCCCTACTCCTCCTAGACCTAACCTGACTAGAAAAGCTATTACCTAAAACAATTTCACAGCACCAAATCTCCACCTCCATCATCACCTCAACCCAAAAAGGCATAATTAAACTTTACTTCCTCTCTTTCTTCTTCCCACTCATCCTAACCCTACTCCTAATCACATAACCTATTCCCCCGAGCAATCTCAATTACAATATATACACCAACAAACAATGTTCAACCAGTAACTACTACTAATCAACGCCCATAATCATACAAAGCCCCCGCACCAATAGGATCCTCCCGAATCAACCCTGACCCCTCTCCTTCATAAATTATTCAGCTTCCTACACTATTAAAGTTTACCACAACCACCACCCCATCATACTCTTTCACCCACAGCACCAATCCTACCTCCATCGCTAACCCCACTAAAACACTCACCAAGACCTCAACCCCTGACCCCCATGCCTCAGGATACTCCTCAATAGCCATCGCTGTAGTATATCCAAAGACAACCATCATTCCCCCTAAATAAATTAAAAAAACTATTAAACCCATATAACCTCCCCCAAAATTCAGAATAATAACACACCCGACCACACCGCTAACAATCAATACTAAACCCCCATAAATAGGAGAAGGCTTAGAAGAAAACCCCACAAACCCCATTACTAAACCCACACTCAACAGAAACAAAGCATACATCATTATTCTCGCACGGACTACAACCACGACCAATGATATGAAAAACCATCGTTGTATTTCAACTACAAGAACACCAATGACCCCAATACGCAAAACTAACCCCCTAATAAAATTAATTAACCACTCATTCATCGACCTCCCCACCCCATCCAACATCTCCGCATGATGAAACTTCGGCTCACTCCTTGGCGCCTGCCTGATCCTCCAAATCACCACAGGACTATTCCTAGCCATGCACTACTCACCAGACGCCTCAACCGCCTTTTCATCAATCGCCCACATCACTCGAGACGTAAATTATGGCTGAATCATCCGCTACCTTCACGCCAATGGCGCCTCAATATTCTTTATCTGCCTCTTCCTACACATCGGGCGAGGCCTATATTACGGATCATTTCTCTACTCAGAAACCTGAAACATCGGCATTATCCTCCTGCTTGCAACTATAGCAACAGCCTTCATAGGCTATGTCCTCCCGTGAGGCCAAATATCATTCTGAGGGGCCACAGTAATTACAAACTTACTATCCGCCATCCCATACATTGGGACAGACCTAGTTCAATGAATCTGAGGAGGCTACTCAGTAGACAGTCCCACCCTCACACGATTCTTTACCTTTCACTTCATCTTGCCCTTCATTATTGCAGCCCTAGCAACACTCCACCTCCTATTCTTGCACGAAACGGGATCAAACAACCCCCTAGGAATCACCTCCCATTCCGATAAAATCACCTTCCACCCTTACTACACAATCAAAGACGCCCTCGGCTTACTTCTCTTCCTTCTCTCCTTAATGACATTAACACTATTCTCACCAGACCTCCTAGGCGACCCAGACAATTATACCCTAGCCAACCCCTTAAACACCCCTCCCCACATCAAGCCCGAATGATATTTCCTATTCGCCTACACAATTCTCCGATCCGTCCCTAACAAACTAGGAGGCGTCCTTGCCCTATTACTATCCATCCTCATCCTAGCAATAATCCCCATCCTCCATATATCCAAACAACAAAGCATAATATTTCGCCCACTAAGCCAATCACTTTATTGACTCCTAGCCGCAGACCTCCTCATTCTAACCTGAATCGGAGGACAACCAGTAAGCTACCCTTTTACCATCATTGGACAAGTAGCATCCGTACTATACTTCACAACAATCCTAATCCTAATACCAACTATCTCCCTAATTGAAAACAAAATACTCAAATGGGCCTGTCCTTGTAGTATAAACTAATACACCAGTCTTGTAAACCGGAGATGAAAACCTTTTTCCAAGGACAAATCAGAGAAAAAGTCTTTAACTCCACCATTAGCAC"}</script>
+  <script id="sanger-core">/* SangerLab scientific core. MIT License; see LICENSE.
+ * Coordinates: internal indices are zero-based; exported positions are one-based.
+ * No network requests, external dependencies, read clipping, or reference imputation.
+ */
+(function (root) {
+  'use strict';
+
+  const VERSION = '0.1.0';
+  const DNA = /^[ACGTRYSWKMBDHVN]+$/;
+  const COMPLEMENT = { A:'T', C:'G', G:'C', T:'A', R:'Y', Y:'R', S:'S', W:'W', K:'M', M:'K', B:'V', V:'B', D:'H', H:'D', N:'N' };
+  const NEG = -1e15;
+
+  function cleanSequence(sequence, label) {
+    if (typeof sequence !== 'string') throw new Error(label + ': sequenza non valida.');
+    const value = sequence.toUpperCase();
+    if (!DNA.test(value)) throw new Error(label + ': usare soltanto basi DNA IUPAC, senza gap.');
+    return value;
+  }
+
+  function parseFasta(text) {
+    if (typeof text !== 'string') throw new Error('FASTA: contenuto non testuale.');
+    const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+    let header = null;
+    const parts = [];
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line || line.startsWith(';')) continue;
+      if (line.startsWith('>')) {
+        if (header !== null) throw new Error('Caricare una reference FASTA con una sola sequenza.');
+        header = line.slice(1).trim();
+        if (!header) throw new Error('FASTA: intestazione vuota.');
+      } else {
+        if (header === null) throw new Error('FASTA: manca la prima intestazione >nome.');
+        parts.push(line.replace(/\s/g, ''));
+      }
+    }
+    if (header === null || !parts.length) throw new Error('FASTA: nessuna sequenza presente.');
+    const sequence = cleanSequence(parts.join(''), 'FASTA');
+    const name = header.split(/\s+/)[0];
+    const ambiguous = (sequence.match(/[^ACGT]/g) || []).length;
+    return { name, description:header, sequence, length:sequence.length,
+      warnings: ambiguous ? [`La reference contiene ${ambiguous} basi IUPAC ambigue; queste posizioni non producono SNP definiti.`] : [] };
+  }
+
+  function reverseComplement(sequence) {
+    const value = cleanSequence(sequence, 'Reverse complement');
+    let result = '';
+    for (let i=value.length-1; i>=0; --i) result += COMPLEMENT[value[i]];
+    return result;
+  }
+
+  function validateQualities(qualities, length) {
+    if (!qualities || qualities.length !== length) throw new Error('Il numero di qualità Phred deve corrispondere alle basi.');
+    for (let i=0; i<length; ++i) {
+      if (!Number.isFinite(qualities[i]) || qualities[i] < 0 || qualities[i] > 255) {
+        throw new Error('Qualità Phred non valida alla base ' + (i+1) + '.');
+      }
+    }
+  }
+
+  /** Modified Mott/Kadane: maximum positive contiguous sum(cutoff - 10^(-Q/10)).
+   * Equal-score ties retain the earliest finished segment; exact zero terminal
+   * increments are omitted. A nonpositive optimum returns an empty interval.
+   * This is NOT a filter requiring every retained base to exceed a Q threshold.
+   */
+  function mottTrim(qualities, cutoff=0.01) {
+    if (!Number.isFinite(cutoff) || cutoff <= 0 || cutoff >= 1) throw new Error('Il cutoff Mott deve essere compreso tra 0 e 1, estremi esclusi.');
+    validateQualities(qualities, qualities ? qualities.length : -1);
+    let running=0, begin=0, best=0, start=0, end=0;
+    for (let i=0; i<qualities.length; ++i) {
+      const increment = cutoff - Math.pow(10, -qualities[i]/10);
+      if (running <= 1e-12) { running=0; begin=i; }
+      running += increment;
+      if (running > best + 1e-12) { best=running; start=begin; end=i+1; }
+      if (running <= 1e-12) { running=0; begin=i+1; }
+    }
+    return { start, end, length:end-start, score:best, cutoff, empty:end===start };
+  }
+
+  function coordinate(refIndex0, origin, length) {
+    const index = ((refIndex0 % length) + length) % length;
+    return { fastaPos:index+1, rcrsPos:((origin-1+index)%length)+1 };
+  }
+
+  function substitution(a,b,match,mismatch) {
+    // Ambiguous symbols carry no mismatch claim and no positive match evidence.
+    if (a==='N' || b==='N' || !'ACGT'.includes(a) || !'ACGT'.includes(b)) return 0;
+    return a===b ? match : mismatch;
+  }
+
+  /** Gotoh-style affine DP, query-global/reference-local. Gaps cost
+   * gapOpen + (length-1)*gapExtend. Reference prefix/suffix are free; every
+   * query base participates. Traceback uses one byte/cell and rolling scores.
+   */
+  function semiglobal(query, target, parameters) {
+    const m=query.length, n=target.length, stride=n+1;
+    const cells=(m+1)*stride;
+    if (cells > parameters.maxCells) throw new Error('Allineamento troppo grande: ridurre la lettura/reference. Limite ' + parameters.maxCells.toLocaleString('it-IT') + ' celle.');
+    const trace = new Uint8Array(cells);
+    let pm=new Float64Array(stride), pi=new Float64Array(stride), pd=new Float64Array(stride);
+    let cm=new Float64Array(stride), ci=new Float64Array(stride), cd=new Float64Array(stride);
+    pi.fill(NEG); pd.fill(NEG);
+    const go=parameters.gapOpen, ge=parameters.gapExtend;
+    for (let i=1; i<=m; ++i) {
+      cm[0]=NEG; cd[0]=NEG; ci[0]=-go-(i-1)*ge;
+      trace[i*stride]=(i===1 ? 0 : 1)<<2;
+      const a=query[i-1];
+      const knownA = a==='A'||a==='C'||a==='G'||a==='T';
+      const row=i*stride;
+      for (let j=1; j<=n; ++j) {
+        let predecessor=0, best=pm[j-1];
+        if (pi[j-1]>best) {best=pi[j-1]; predecessor=1;}
+        if (pd[j-1]>best) {best=pd[j-1]; predecessor=2;}
+        const b=target[j-1];
+        const knownB=b==='A'||b==='C'||b==='G'||b==='T';
+        cm[j]=best + (knownA && knownB ? (a===b ? parameters.match : parameters.mismatch) : 0);
+        let bits=predecessor;
+        best=pi[j]-ge; predecessor=1;
+        if (pm[j]-go>best) {best=pm[j]-go; predecessor=0;}
+        if (pd[j]-go>best) {best=pd[j]-go; predecessor=2;}
+        ci[j]=best; bits|=predecessor<<2;
+        best=cd[j-1]-ge; predecessor=2;
+        if (cm[j-1]-go>best) {best=cm[j-1]-go; predecessor=0;}
+        if (ci[j-1]-go>best) {best=ci[j-1]-go; predecessor=1;}
+        cd[j]=best; bits|=predecessor<<4;
+        trace[row+j]=bits;
+      }
+      [pm,cm]=[cm,pm]; [pi,ci]=[ci,pi]; [pd,cd]=[cd,pd];
+    }
+    let score=NEG, end=0, state=0;
+    let endpointCount=0;
+    // A final reference deletion is never needed when its suffix is free.
+    for (let j=0; j<=n; ++j) {
+      const value=Math.max(pm[j],pi[j]);
+      if (value>score) {score=value; end=j; state=pm[j]>=pi[j]?0:1; endpointCount=1;}
+      else if (value===score) ++endpointCount;
+    }
+    const uniqueEndpoints=new Set();
+    for(let j=0;j<=n;++j) if(Math.max(pm[j],pi[j])===score) {
+      uniqueEndpoints.add(parameters.circular ? j%parameters.referenceLength : j);
+    }
+    let i=m, j=end;
+    const reversed=[];
+    while (i>0) {
+      const bits=trace[i*stride+j];
+      if (state===0) {
+        if (j===0) throw new Error('Traceback non valido: stato match senza reference.');
+        reversed.push({refIndex0:j-1,queryIndex0:i-1});
+        state=bits&3; --i; --j;
+      } else if (state===1) {
+        reversed.push({refIndex0:null,queryIndex0:i-1});
+        state=(bits>>2)&3; --i;
+      } else if (state===2) {
+        if (j===0) throw new Error('Traceback non valido: delezione senza reference.');
+        reversed.push({refIndex0:j-1,queryIndex0:null});
+        state=(bits>>4)&3; --j;
+      } else throw new Error('Traceback non valido.');
+    }
+    reversed.reverse();
+    return {score,start:j,end,rawColumns:reversed,endpointCount,uniqueEndpointCount:uniqueEndpoints.size};
+  }
+
+  function anchorFor(index, reference, origin, circular, observed) {
+    if (index===null || index===undefined || (!circular && (index<0 || index>=reference.length))) return null;
+    const coords=coordinate(index,origin,reference.length);
+    return {...coords, base:reference[coords.fastaPos-1], observed};
+  }
+
+  function makeVariants(columns, reference, parameters) {
+    const variants=[];
+    for (let i=0; i<columns.length; ++i) {
+      const c=columns[i];
+      if (c.op==='=') continue;
+      if (c.op==='X' || c.op==='?') {
+        variants.push({type:c.op==='X'?'SNP':'AMBIGUOUS', rcrsPos:c.rcrsPos,fastaPos:c.fastaPos,
+          ref:c.refBase, alt:c.readBase, readPos:c.readPos, quality:c.quality, flankQuality:null,
+          lowQuality:c.lowQuality, positions:[c.rcrsPos], fastaPositions:[c.fastaPos], readPositions:[c.readPos],
+          leftAnchor:null,rightAnchor:null,placementAmbiguous:false,
+          note:c.op==='?'?'Base IUPAC ambigua nella read o nella reference; nessuna chiamata di SNP definita.':(c.lowQuality?'Differenza in una base di bassa qualità: controllare il cromatogramma.':'Differenza rispetto alla reference; controllare il cromatogramma.')});
+        continue;
+      }
+      const start=i, op=c.op;
+      while (i+1<columns.length && columns[i+1].op===op) ++i;
+      const block=columns.slice(start,i+1);
+      let left=null,right=null;
+      for (let k=start-1;k>=0;--k) if(columns[k].refIndex0!==null) {left=columns[k].refIndex0;break;}
+      for (let k=i+1;k<columns.length;++k) if(columns[k].refIndex0!==null) {right=columns[k].refIndex0;break;}
+      // Flanks outside aligned coverage are reference context, explicitly labelled.
+      const hasLeft=left!==null, hasRight=right!==null;
+      if(op==='D') {if(left===null) left=block[0].refIndex0-1; if(right===null) right=block.at(-1).refIndex0+1;}
+      else {if(left===null && right!==null) left=right-1; if(right===null && left!==null) right=left+1;}
+      const leftAnchor=anchorFor(left,reference,parameters.origin,parameters.circular,hasLeft);
+      const rightAnchor=anchorFor(right,reference,parameters.origin,parameters.circular,hasRight);
+      const ref=op==='D'?block.map(x=>x.refBase).join(''):'';
+      const alt=op==='I'?block.map(x=>x.readBase).join(''):'';
+      const allele=ref||alt;
+      const placementAmbiguous=!!((leftAnchor && leftAnchor.base===allele.at(-1)) || (rightAnchor && rightAnchor.base===allele[0]));
+      const qs=block.map(x=>x.quality).filter(x=>x!==null);
+      const flankQs=[];
+      for(let k=start-1;k>=0;--k) if(columns[k].quality!==null) {flankQs.push(columns[k].quality);break;}
+      for(let k=i+1;k<columns.length;++k) if(columns[k].quality!==null) {flankQs.push(columns[k].quality);break;}
+      const quality=qs.length?Math.min(...qs):null;
+      const flankQuality=flankQs.length?Math.min(...flankQs):null;
+      const lowQuality=quality!==null?quality<parameters.qualityThreshold:flankQuality===null||flankQuality<parameters.qualityThreshold;
+      const positions=block.filter(x=>x.rcrsPos!==null).map(x=>x.rcrsPos);
+      const fastaPositions=block.filter(x=>x.fastaPos!==null).map(x=>x.fastaPos);
+      variants.push({type:op==='I'?'INS':'DEL',rcrsPos:positions[0] ?? leftAnchor?.rcrsPos ?? rightAnchor?.rcrsPos ?? null,
+        fastaPos:fastaPositions[0] ?? leftAnchor?.fastaPos ?? rightAnchor?.fastaPos ?? null,
+        ref,alt,readPos:block.find(x=>x.readPos!==null)?.readPos??null,quality,flankQuality,lowQuality,positions,fastaPositions,
+        readPositions:block.filter(x=>x.readPos!==null).map(x=>x.readPos), leftAnchor,rightAnchor,placementAmbiguous,
+        note:'Indel rappresentato come nell’allineamento, non normalizzato.'+(placementAmbiguous?' Posizionamento equivalente possibile in una ripetizione.':' Nessuna equivalenza locale semplice rilevata; controllare comunque i picchi.')+(op==='D'?' La delezione non ha un proprio Phred; flankQuality riguarda le basi adiacenti.':'')});
+    }
+    return variants;
+  }
+
+  function alignRead(sequence, qualities, reference, options={}) {
+    const query=cleanSequence(sequence,'Read');
+    const target=cleanSequence(reference,'Reference');
+    validateQualities(qualities,query.length);
+    const parameters={origin:1,circular:true,orientation:'auto',match:2,mismatch:-3,gapOpen:6,gapExtend:1,
+      trimStart:0,qualityThreshold:20,minIdentity:0.80,minReadLength:50,maxCells:100000000,...options};
+    const L=target.length;
+    parameters.referenceLength=L;
+    if(!Number.isInteger(parameters.origin)||parameters.origin<1||parameters.origin>L) throw new Error('La coordinata rCRS della prima base deve essere un intero da 1 alla lunghezza della reference.');
+    if(!['auto','forward','reverse'].includes(parameters.orientation)) throw new Error('Orientamento non valido.');
+    if(!Number.isInteger(parameters.trimStart)||parameters.trimStart<0) throw new Error('trimStart deve essere un indice zero-based non negativo.');
+    for(const key of ['match','mismatch','gapOpen','gapExtend','qualityThreshold','minIdentity','minReadLength','maxCells']) if(!Number.isFinite(parameters[key])) throw new Error('Parametro numerico non valido: '+key);
+    if(parameters.match<=0||parameters.mismatch>0||parameters.gapOpen<=0||parameters.gapExtend<=0) throw new Error('Punteggi di allineamento non validi.');
+    if(parameters.minIdentity<0||parameters.minIdentity>1||parameters.minReadLength<1||parameters.qualityThreshold<0) throw new Error('Soglie di controllo non valide.');
+    if(parameters.circular && query.length>L) throw new Error('Per questa versione la read deve essere più corta o uguale alla reference circolare.');
+    const doubled=parameters.circular?target+target:target;
+    let best=null,otherScore=null,selectedOrientation=null,orientedQuery=null,orientedQualities=null;
+    const orientations=parameters.orientation==='auto'?['forward','reverse']:[parameters.orientation];
+    for(const orientation of orientations) {
+      const seq=orientation==='forward'?query:reverseComplement(query);
+      const result=semiglobal(seq,doubled,parameters);
+      if(best===null||result.score>best.score) {
+        otherScore=best?.score??null;
+        best=result;selectedOrientation=orientation;orientedQuery=seq;
+        orientedQualities=orientation==='forward'?Array.from(qualities):Array.from(qualities).reverse();
+      } else otherScore=result.score;
+    }
+    const referenceSpan=best.end-best.start;
+    if(parameters.circular && referenceSpan>L) throw new Error('Allineamento esteso oltre un giro della reference: verificare read, trimming e parametri.');
+    const columns=best.rawColumns.map(({refIndex0,queryIndex0})=>{
+      const coords=refIndex0===null?{fastaPos:null,rcrsPos:null}:coordinate(refIndex0,parameters.origin,L);
+      const refBase=refIndex0===null?'-':doubled[refIndex0];
+      const readBase=queryIndex0===null?'-':orientedQuery[queryIndex0];
+      const readIndex0=queryIndex0===null?null:parameters.trimStart+(selectedOrientation==='forward'?queryIndex0:query.length-1-queryIndex0);
+      const quality=queryIndex0===null?null:orientedQualities[queryIndex0];
+      let op;
+      if(refIndex0===null) op='I';
+      else if(queryIndex0===null) op='D';
+      else if(!'ACGT'.includes(refBase)||!'ACGT'.includes(readBase)) op='?';
+      else op=refBase===readBase?'=':'X';
+      return {op,refIndex0:refIndex0===null?null:refIndex0%L,refUnwrappedIndex0:refIndex0,queryIndex0,...coords,
+        readIndex0,readPos:readIndex0===null?null:readIndex0+1,refBase,readBase,quality,lowQuality:quality!==null&&quality<parameters.qualityThreshold};
+    });
+    // Variant context needs unwrapped indices across the circular join.
+    const contextColumns=columns.map(c=>({...c,refIndex0:c.refUnwrappedIndex0}));
+    const variants=makeVariants(contextColumns,target,parameters);
+    const counts={'=':0,'X':0,'I':0,'D':0,'?':0};
+    for(const c of columns) ++counts[c.op];
+    const identity=counts['=']/Math.max(1,columns.length);
+    const lowQuality=orientedQualities.filter(q=>q<parameters.qualityThreshold).length;
+    const first=columns.find(c=>c.rcrsPos!==null),last=columns.findLast(c=>c.rcrsPos!==null);
+    const warnings=[];
+    const accepted=identity>=parameters.minIdentity&&query.length>=parameters.minReadLength&&referenceSpan>0;
+    if(query.length<parameters.minReadLength) warnings.push('Read più corta della lunghezza minima di controllo ('+parameters.minReadLength+' basi).');
+    if(identity<parameters.minIdentity) warnings.push('Identità inferiore alla soglia di controllo ('+Math.round(parameters.minIdentity*100)+'%): allineamento non accettato.');
+    if(lowQuality) warnings.push(lowQuality+' basi mantenute hanno qualità inferiore a Q'+parameters.qualityThreshold+'. Il trimming Mott può mantenere basi interne di bassa qualità.');
+    if(counts['?']) warnings.push(counts['?']+' colonne contengono simboli IUPAC ambigui: nessuna chiamata di SNP definita per queste colonne.');
+    if(otherScore!==null&&otherScore===best.score) warnings.push('Entrambi gli orientamenti hanno lo stesso punteggio; orientamento da verificare.');
+    // A doubled circle has duplicate endpoints; count distinct circular loci.
+    // This detects endpoint ambiguity, not every alternative internal gap path.
+    if(best.uniqueEndpointCount>1) warnings.push('Più posizionamenti hanno lo stesso punteggio; verificare la specificità della read.');
+    if(variants.some(v=>v.placementAmbiguous)) warnings.push('Almeno un indel cade in una ripetizione: la posizione mostrata dipende dall’allineamento e non è normalizzata.');
+    if(!referenceSpan) warnings.push('Nessuna base della reference allineata.');
+    let wrapsRcrs=false,wrapsFasta=false;
+    for(let i=1;i<columns.length;++i) {
+      const c=columns[i]; if(c.rcrsPos===null) continue;
+      let k=i-1;while(k>=0&&columns[k].rcrsPos===null)--k;
+      if(k>=0){if(c.rcrsPos<columns[k].rcrsPos)wrapsRcrs=true;if(c.fastaPos<columns[k].fastaPos)wrapsFasta=true;}
+    }
+    return {version:VERSION,orientation:selectedOrientation,score:best.score,otherOrientationScore:otherScore,
+      sequence:orientedQuery,qualities:orientedQualities,columns,variants,
+      alignment:{reference:columns.map(c=>c.refBase).join(''),query:columns.map(c=>c.readBase).join(''),
+        matchLine:columns.map(c=>c.op==='='?'|':c.op==='?'?'?':' ').join('')},
+      summary:{readLength:query.length,alignmentColumns:columns.length,referenceLength:L,referenceSpan,
+        fastaStart:first?.fastaPos??null,fastaEnd:last?.fastaPos??null,rcrsStart:first?.rcrsPos??null,rcrsEnd:last?.rcrsPos??null,
+        matches:counts['='],mismatches:counts.X,inserted:counts.I,deleted:counts.D,ambiguous:counts['?'],lowQuality,
+        identity,readCoverage:1,referenceCoverage:referenceSpan/L,wrapsRcrs,wrapsFasta,accepted,
+        equivalentEndpointCount:best.uniqueEndpointCount,
+        meanQuality:orientedQualities.reduce((a,b)=>a+b,0)/orientedQualities.length},
+      warnings,parameters};
+  }
+
+  const api={VERSION,parseFasta,reverseComplement,mottTrim,coordinate,alignRead};
+  root.SangerCore=api;
+  if(typeof module!=='undefined'&&module.exports) module.exports=api;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script>
+  <script>/*
+ * ABIF parser adapted and hardened from Sanger Viewer:
+ * https://github.com/animeshkundu/sanger-viewer/blob/
+ * 3ceda33e18dde1700f6a53414f58ad4b1d8989be/src/parsers/abif.ts
+ *
+ * MIT License
+ * Copyright (c) 2026 Animesh
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * SangerLab changes: bounds checks, typed signed traces, matched PBAS/PLOC/PCON
+ * generations, no assumed FWO_ channel order, length consistency checks,
+ * no extraction of personal instrument/sample metadata, reverse-complement
+ * of sequence/quality/peaks/channels as one coherent record.
+ */
+
+(function (global) {
+"use strict";
+
+const ABIF_COMPLEMENT = Object.freeze({
+  A: 'T', T: 'A', C: 'G', G: 'C', R: 'Y', Y: 'R', S: 'S', W: 'W',
+  K: 'M', M: 'K', B: 'V', V: 'B', D: 'H', H: 'D', N: 'N'
+});
+
+/** Parse ABI analyzed traces and the original basecaller calls (PBAS2).
+ * Falls back to generation 1 only when the whole PBAS2/PLOC2 pair is absent.
+ * A generation's quality scores are never mixed with another generation.
+ * All per-base and per-trace coordinates are zero based internally.
+ */
+function parseAb1(buffer, fileName = 'sequence.ab1') {
+  if (ArrayBuffer.isView(buffer)) {
+    buffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+  }
+  if (!(buffer instanceof ArrayBuffer) || buffer.byteLength < 34) {
+    throw new Error('File AB1 vuoto, troppo corto o non valido.');
+  }
+  if (buffer.byteLength > 64 * 1024 * 1024) {
+    throw new Error('File AB1 oltre il limite di 64 MiB di questa versione.');
+  }
+  const view = new DataView(buffer);
+  const warnings = [];
+  function check(offset, length, what) {
+    if (!Number.isSafeInteger(offset) || !Number.isSafeInteger(length) ||
+        offset < 0 || length < 0 || offset + length > buffer.byteLength) {
+      throw new Error(`File AB1 incompleto o corrotto: ${what}.`);
+    }
+  }
+  function ascii(offset, length) {
+    check(offset, length, 'testo oltre la fine del file');
+    let result = '';
+    for (let i = 0; i < length; i++) result += String.fromCharCode(view.getUint8(offset + i));
+    return result;
+  }
+  function entry(offset) {
+    check(offset, 28, 'directory');
+    return {
+      tag: ascii(offset, 4), number: view.getUint32(offset + 4, false),
+      type: view.getUint16(offset + 8, false), size: view.getUint16(offset + 10, false),
+      count: view.getUint32(offset + 12, false), bytes: view.getUint32(offset + 16, false),
+      dataOffset: view.getUint32(offset + 20, false), inlineOffset: offset + 20
+    };
+  }
+  function location(e) {
+    const at = e.bytes <= 4 ? e.inlineOffset : e.dataOffset;
+    check(at, e.bytes, `${e.tag}${e.number}`);
+    return at;
+  }
+  function string(e) {
+    let at = location(e), size = e.bytes;
+    if (e.type === 18) {
+      if (!size) return '';
+      const length = view.getUint8(at);
+      if (length + 1 > size) throw new Error('Stringa AB1 Pascal incompleta.');
+      at++; size = length;
+    }
+    return ascii(at, size).replace(/\0+$/g, '');
+  }
+  function numbers(e, byteQuality = false) {
+    const at = location(e);
+    const supportedSizes = {1: 1, 2: 1, 3: 2, 4: 2, 5: 4, 7: 4, 8: 8};
+    const size = supportedSizes[e.type];
+    if (!size || e.size !== size || e.count * size > e.bytes) {
+      throw new Error(`Formato numerico non supportato o incompleto: ${e.tag}${e.number}.`);
+    }
+    if (byteQuality && size !== 1) throw new Error('Formato PCON non supportato: attesi byte.');
+    const out = new Array(e.count);
+    for (let i = 0; i < e.count; i++) {
+      const p = at + i * size;
+      if (size === 1) out[i] = view.getUint8(p);
+      else if (e.type === 3) out[i] = view.getUint16(p, false);
+      else if (e.type === 4) out[i] = view.getInt16(p, false);
+      else if (e.type === 5) out[i] = view.getInt32(p, false);
+      else if (e.type === 7) out[i] = view.getFloat32(p, false);
+      else if (e.type === 8) out[i] = view.getFloat64(p, false);
+      if (!Number.isFinite(out[i])) throw new Error('Dato numerico AB1 non finito.');
+    }
+    return out;
+  }
+  if (ascii(0, 4) !== 'ABIF') throw new Error('Firma ABIF assente: selezionare un file .ab1 valido.');
+  const version = view.getUint16(4, false);
+  if (![1, 3].includes(Math.floor(version / 100))) {
+    throw new Error(`Versione ABIF ${version} non supportata.`);
+  }
+  const root = entry(6);
+  if (!root.count || root.count > 100000) throw new Error('Numero di elementi ABIF non valido.');
+  check(root.dataOffset, root.count * 28, 'tabella delle directory');
+  const entries = new Map();
+  for (let i = 0; i < root.count; i++) {
+    const e = entry(root.dataOffset + i * 28), key = `${e.tag}${e.number}`;
+    if (entries.has(key)) throw new Error(`Tag ABIF duplicato: ${key}.`);
+    entries.set(key, e);
+  }
+  const fwo = entries.get('FWO_1');
+  if (!fwo) throw new Error('FWO_1 assente: ordine dei canali non determinabile.');
+  const channelOrder = string(fwo).toUpperCase();
+  if (channelOrder.length !== 4 || [...channelOrder].sort().join('') !== 'ACGT') {
+    throw new Error('Ordine dei quattro canali FWO_1 non valido.');
+  }
+  const channels = {};
+  for (let i = 0; i < 4; i++) {
+    const e = entries.get(`DATA${i + 9}`);
+    if (!e) throw new Error(`Traccia analizzata DATA${i + 9} assente.`);
+    channels[channelOrder[i]] = Float32Array.from(numbers(e));
+  }
+  const sampleCount = channels.A.length;
+  if (!sampleCount || !['C', 'G', 'T'].every(b => channels[b].length === sampleCount)) {
+    throw new Error('I quattro canali del cromatogramma hanno lunghezze diverse o sono vuoti.');
+  }
+  let generation;
+  if (entries.has('PBAS2') && entries.has('PLOC2')) generation = 2;
+  else if (!entries.has('PBAS2') && !entries.has('PLOC2') && entries.has('PBAS1') && entries.has('PLOC1')) {
+    generation = 1;
+    warnings.push('PBAS2/PLOC2 assenti: letti PBAS1/PLOC1, che possono contenere modifiche precedenti.');
+  } else throw new Error('Coppia coerente PBAS/PLOC assente: file AB1 non analizzato o incompleto.');
+  const sequence = string(entries.get(`PBAS${generation}`)).toUpperCase();
+  if (!sequence.length || /[^ACGTRYSWKMBDHVN]/.test(sequence)) {
+    throw new Error('Sequenza ABI vuota o contenente caratteri non IUPAC.');
+  }
+  const peakPositions = numbers(entries.get(`PLOC${generation}`));
+  if (peakPositions.length !== sequence.length) throw new Error('Numero di basi e coordinate dei picchi non coincidente.');
+  if (peakPositions.some((x, i) => !Number.isInteger(x) || x < 0 || x >= sampleCount || (i > 0 && x < peakPositions[i - 1]))) {
+    throw new Error('Coordinate dei picchi fuori intervallo o non ordinate.');
+  }
+  const qualityEntry = entries.get(`PCON${generation}`);
+  const qualities = qualityEntry ? numbers(qualityEntry, true) : null;
+  if (qualities && qualities.length !== sequence.length) throw new Error('Numero di qualità PCON e di basi non coincidente.');
+  if (!qualities) warnings.push(`PCON${generation} assente: qualità e trimming automatico non disponibili.`);
+  return {
+    format: 'ab1', fileName, abiVersion: version, sampleCount, channelOrder,
+    channels, sequence, baseCalls: sequence.split(''), peakPositions, qualities,
+    sourceIndices: Array.from({length: sequence.length}, (_, i) => i),
+    orientation: 'original',
+    tags: {baseCalls: `PBAS${generation}`, peaks: `PLOC${generation}`, qualities: qualities ? `PCON${generation}` : null},
+    warnings
+  };
+}
+
+/** Reverse the plotted signal AND complement its channel labels.
+ * Merely reversing a sequence string would leave a scientifically wrong trace.
+ * This operation is an involution: applying it twice restores all data.
+ */
+function reverseComplementTrace(record) {
+  const channels = {};
+  for (const base of ['A', 'C', 'G', 'T']) channels[base] = Float32Array.from(record.channels[ABIF_COMPLEMENT[base]]).reverse();
+  const baseCalls = record.baseCalls.slice().reverse().map(b => ABIF_COMPLEMENT[b]);
+  return {
+    ...record,
+    channels,
+    baseCalls,
+    sequence: baseCalls.join(''),
+    peakPositions: record.peakPositions.slice().reverse().map(x => record.sampleCount - 1 - x),
+    qualities: record.qualities ? record.qualities.slice().reverse() : null,
+    sourceIndices: record.sourceIndices.slice().reverse(),
+    orientation: record.orientation === 'reverse-complement' ? 'original' : 'reverse-complement'
+  };
+}
+
+const api = Object.freeze({parseAb1, reverseComplementTrace});
+global.SangerAbif = api;
+if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+  <script>/* SangerLab UI, MIT. Inputs and results stay in memory in this browser. */
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const Core = globalThis.SangerCore;
+  const Parser = globalThis.SangerAbif;
+  if(window.matchMedia('(max-width: 680px)').matches) $('view-count').value='30';
+  const bundled = JSON.parse($('sanger-reference').textContent);
+  const N = bundled.sequence.length;
+  const canonical = bundled.sequence.slice(N - bundled.origin + 1) + bundled.sequence.slice(0, N - bundled.origin + 1);
+  const colors = {A:'#19854b',C:'#326fbe',G:'#334155',T:'#c94652',N:'#8b7b89',R:'#8b7b89',Y:'#8b7b89'};
+  const state = {read:null,reference:null,origin:bundled.origin,result:null,trimMethod:'Mott',trimCutoff:0.01,autoEmpty:false,
+    readHash:null,referenceHash:null,viewStart:0,selected:null,alignmentPage:0,worker:null,run:0,load:0,busy:false,mapping:new Map(),elapsed:null};
+  const number = n => n === null || n === undefined ? '—' : Number(n).toLocaleString('it-IT');
+  const text = (id,value) => { $(id).textContent = value; };
+  const element = (tag,content,className) => {const e=document.createElement(tag);if(content!==undefined)e.textContent=content;if(className)e.className=className;return e;};
+  function status(message,type='') { text('status',message); $('status').className='status'+(type?' '+type:''); }
+  async function sha256(bytes) {
+    if(!globalThis.crypto?.subtle) return null;
+    try {const a=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(a)].map(n=>n.toString(16).padStart(2,'0')).join('');} catch {return null;}
+  }
+  function region() {
+    if(!state.read) throw new Error('Carica prima un cromatogramma.');
+    const start=Number($('trim-start').value),end=Number($('trim-end').value);
+    if(state.autoEmpty||!Number.isInteger(start)||!Number.isInteger(end)||start<1||end<start||end>state.read.sequence.length) throw new Error('Trimming non valido: indica prima e ultima base, incluse, fra 1 e '+state.read.sequence.length+'.');
+    return {start:start-1,end,length:end-start+1};
+  }
+  function toggleControls() {
+    const ready=!!state.read;
+    for(const id of ['trim-start','trim-end','reset-trim','jump-base','jump-button','prev-trace','next-trace','trace-slider']) $(id).disabled=!ready||state.busy;
+    $('auto-trim').disabled=!ready||!state.read.qualities||state.busy;
+    let valid=false;try {region();valid=true;} catch {}
+    $('analyze').disabled=!ready||!state.read.qualities||!valid||state.busy;
+    $('orientation').disabled=state.busy;$('cutoff').disabled=state.busy;
+  }
+  function invalidate() {
+    state.run++;if(state.worker){state.worker.terminate();state.worker=null;}
+    state.busy=false;state.result=null;state.mapping.clear();state.elapsed=null;
+    $('result-content').hidden=true;$('result-empty').hidden=false;
+    text('alignment-state','Da allineare');$('alignment-state').className='pill';
+    $('analyze').replaceChildren(document.createTextNode('Allinea alla rCRS →'));
+    renderStats();toggleControls();drawTrace();renderInspector();
+  }
+  function setReference(reference) {
+    if(reference.sequence.length!==N) throw new Error('Questa versione richiede la rCRS completa di '+number(N)+' posizioni, originale o ruotata.');
+    const offset=(canonical+canonical).indexOf(reference.sequence);
+    if(offset<0||offset>=N) throw new Error('Il FASTA non è una rotazione esatta di NC_012920.1. Non posso assegnare automaticamente coordinate rCRS affidabili. La reference precedente resta selezionata.');
+    invalidate();state.reference=reference;state.origin=offset+1;
+    state.referenceHash=null;
+    const thisReference=reference;
+    sha256(new TextEncoder().encode(reference.sequence)).then(hash=>{if(state.reference===thisReference)state.referenceHash=hash;});
+    text('reference-name',reference.name);text('reference-meta',number(N)+' posizioni · origine rCRS '+number(state.origin));
+    const join=N-state.origin+1;
+    text('coordinate-example',`Prima base FASTA → rCRS ${number(state.origin)}. `+(state.origin===1?'Il FASTA segue la numerazione canonica.':`Basi FASTA ${number(join)} e ${number(join+1)} → rCRS ${number(N)} e 1.`));
+  }
+  function trimAuto(announce=true) {
+    if(!state.read?.qualities) return;
+    const cutoff=Number($('cutoff').value);const trim=Core.mottTrim(state.read.qualities,cutoff);
+    invalidate();state.trimMethod='Mott';state.trimCutoff=cutoff;state.autoEmpty=trim.empty;
+    $('trim-start').value=trim.start+1;$('trim-end').value=trim.end;
+    if(trim.empty)status('Nessun segmento ha un punteggio Mott positivo. Controlla le qualità; puoi impostare manualmente un intervallo per ispezionarlo.','error');
+    else if(announce)status(`Trimming Mott p=${cutoff}: conservate le basi ${trim.start+1}–${trim.end}. Controlla i picchi e avvia l'allineamento.`);
+    updateTrimInfo();
+  }
+  function updateTrimInfo() {
+    let r=null;try {r=region();} catch {}
+    if(r)text('trim-info',`${number(r.length)} basi conservate · ${r.start} escluse a sinistra, ${state.read.sequence.length-r.end} a destra · ${state.trimMethod}`);
+    else text('trim-info','Intervallo non valido o nessun segmento conservato.');
+    renderStats();toggleControls();drawTrace();renderInspector();
+  }
+  async function loadRead(file) {
+    if(!file)return;const token=++state.load;
+    if(file.size>64*1024*1024){status('File oltre 64 MiB: scegli un singolo cromatogramma AB1.','error');return;}
+    status('Lettura del file AB1 e delle qualità…','busy');
+    try {
+      const bytes=await file.arrayBuffer();const parsed=Parser.parseAb1(bytes,file.name);const hash=await sha256(bytes);
+      if(token!==state.load)return;
+      invalidate();state.read=parsed;state.readHash=hash;state.selected=null;state.autoEmpty=false;
+      $('trim-start').max=parsed.sequence.length;$('trim-end').max=parsed.sequence.length;$('jump-base').max=parsed.sequence.length;
+      $('trim-start').value=1;$('trim-end').value=parsed.sequence.length;
+      text('read-name',file.name);text('read-meta',`${number(parsed.sequence.length)} basi · ${parsed.tags.baseCalls} / ${parsed.tags.qualities||'Phred assenti'} · 4 canali`);
+      $('trace-empty').hidden=true;
+      if(parsed.qualities){trimAuto(false);state.viewStart=Math.max(0,Number($('trim-start').value)-6);}
+      else {state.viewStart=0;state.trimMethod='manuale';updateTrimInfo();}
+      if(parsed.warnings.length)status(parsed.warnings.join(' '),parsed.qualities?'':'error');
+      else if(!state.autoEmpty)status(`File aperto: ${file.name}. Trimming proposto; puoi regolare le estremità e premere «Allinea alla rCRS».`);
+      syncTraceControls();drawTrace();toggleControls();
+    } catch(error){if(token===state.load)status(error.message,'error');}
+  }
+  function renderStats() {
+    if(!state.read)return;
+    text('stat-length',number(state.read.sequence.length));text('stat-length-note',`Phred ${state.read.qualities?'originali':'non disponibili'} · ${state.read.channelOrder}`);
+    let r;try{r=region();}catch{text('stat-trim','—');text('stat-q','—');text('stat-map','—');return;}
+    text('stat-trim',number(r.length));text('stat-trim-note',`basi AB1 ${r.start+1}–${r.end}`);
+    if(state.read.qualities){const q=state.read.qualities.slice(r.start,r.end);text('stat-q',(100*q.filter(x=>x>=20).length/q.length).toLocaleString('it-IT',{maximumFractionDigits:1})+'%');text('stat-q-note',`Q ≥ 20 · Q media ${(q.reduce((a,b)=>a+b,0)/q.length).toLocaleString('it-IT',{maximumFractionDigits:1})}`);}
+    else{text('stat-q','—');text('stat-q-note','Phred assenti nel file');}
+    if(state.result){const s=state.result.summary;text('stat-map',`${number(s.rcrsStart)} → ${number(s.rcrsEnd)}`);text('stat-map-note',s.accepted?(s.wrapsRcrs?'attraversa 16.569 → 1':'nell’orientamento della reference'):'ipotesi non accettata: vedi avvisi');}
+    else{text('stat-map','—');text('stat-map-note','disponibili dopo l’allineamento');}
+  }
+  function syncTraceControls() {
+    if(!state.read)return;
+    const count=Number($('view-count').value);const max=Math.max(0,state.read.sequence.length-count);
+    state.viewStart=Math.max(0,Math.min(max,state.viewStart));
+    $('trace-slider').max=max;$('trace-slider').value=state.viewStart;
+    const end=Math.min(state.viewStart+count,state.read.sequence.length);
+    text('trace-range',`Basi AB1 ${state.viewStart+1}–${end} di ${number(state.read.sequence.length)}`);
+    text('slider-position',`${state.viewStart+1} / ${state.read.sequence.length}`);
+  }
+  let plotGeometry=null;
+  function drawTrace() {
+    const canvas=$('trace-canvas'),rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
+    if(rect.width<1)return;
+    canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);
+    const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);const w=rect.width,h=rect.height;ctx.clearRect(0,0,w,h);
+    if(!state.read){plotGeometry=null;return;}
+    syncTraceControls();const read=state.read,lo=state.viewStart,hi=Math.min(read.sequence.length,lo+Number($('view-count').value));
+    const peaks=read.peakPositions,pad=hi-lo>1?(peaks[hi-1]-peaks[lo])/(hi-lo-1)/2:5;
+    const sampleLo=Math.max(0,peaks[lo]-pad),sampleHi=Math.min(read.sampleCount-1,peaks[hi-1]+pad);
+    const left=36,right=w-12,width=right-left,scale=width/Math.max(1,sampleHi-sampleLo),x=s=>left+(s-sampleLo)*scale;
+    let minimum=0,maximum=1;
+    for(const b of ['A','C','G','T'])for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){const value=read.channels[b][i];if(value>maximum)maximum=value;if(value<minimum)minimum=value;}
+    let trim={start:0,end:0};try{trim=region();}catch{}
+    for(let i=lo;i<hi;i++) {
+      const a=x(i? (peaks[i-1]+peaks[i])/2:sampleLo),b=x(i+1<peaks.length?(peaks[i]+peaks[i+1])/2:sampleHi);
+      if(i<trim.start||i>=trim.end){ctx.fillStyle='#e5e4eab8';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
+      if(state.selected===i){ctx.fillStyle='#d8c5f396';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
+    }
+    ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.textAlign='left';ctx.fillText('AB1',3,15);ctx.fillText('rCRS',3,29);
+    ctx.strokeStyle='#e3e0e8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,211);ctx.lineTo(right,211);ctx.moveTo(left,284);ctx.lineTo(right,284);ctx.stroke();
+    const y=value=>209-(value-minimum)/(maximum-minimum)*137;
+    ctx.save();ctx.beginPath();ctx.rect(left,65,width,149);ctx.clip();
+    for(const b of ['G','C','A','T']){ctx.strokeStyle=colors[b];ctx.lineWidth=1.25;ctx.beginPath();for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){if(i===Math.floor(sampleLo))ctx.moveTo(x(i),y(read.channels[b][i]));else ctx.lineTo(x(i),y(read.channels[b][i]));}ctx.stroke();}
+    ctx.restore();
+    const qmax=Math.max(60,...(read.qualities||[]));
+    ctx.setLineDash([3,3]);ctx.strokeStyle='#b9b2c5';ctx.beginPath();ctx.moveTo(left,284-20/qmax*50);ctx.lineTo(right,284-20/qmax*50);ctx.stroke();ctx.setLineDash([]);
+    ctx.textAlign='left';ctx.font='8px system-ui';ctx.fillStyle='#656274';ctx.fillText('Q20',2,284-20/qmax*50+3);
+    for(let i=lo;i<hi;i++){
+      const px=x(peaks[i]),base=read.sequence[i],q=read.qualities?.[i],mapped=state.mapping.get(i);
+      ctx.textAlign='center';ctx.font='8px system-ui';ctx.fillStyle='#656274';
+      if(i%5===0||(i===lo&&(5-i%5)%5>=3)){ctx.fillText(String(i+1),px,15);if(mapped)ctx.fillText(mapped.rcrsPos===null?'+':String(mapped.rcrsPos),px,29);}
+      ctx.font=hi-lo>80?'10px ui-monospace,monospace':'bold 12px ui-monospace,monospace';ctx.fillStyle=colors[base]||'#8b7b89';ctx.fillText(base,px,53);
+      if(mapped&&mapped.op!=='='&&mapped.op!=='?'){ctx.fillStyle='#c1922c';ctx.beginPath();ctx.arc(px,62,2.4,0,2*Math.PI);ctx.fill();}
+      if(q!==undefined&&q!==null){const bw=Math.max(2,Math.min(12,width/(hi-lo)*.65));ctx.fillStyle=q<20?'#d89767':'#8d70b8';ctx.fillRect(px-bw/2,284-q/qmax*50,bw,q/qmax*50);if(hi-lo<=50&&(width/(hi-lo)>12||i%5===0)){ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.fillText(String(q),px,231);}}
+    }
+    plotGeometry={left,right,sampleLo,sampleHi,lo,hi,width};
+  }
+  function renderInspector() {
+    const box=$('base-inspector');
+    if(!state.read||state.selected===null){box.replaceChildren(element('span','Seleziona una base nel cromatogramma. Le barre inferiori rappresentano i Phred score originali; la linea tratteggiata indica Q20.','muted'));return;}
+    const i=state.selected,read=state.read,q=read.qualities?.[i],c=state.mapping.get(i);
+    const fields=[['Base chiamata',read.sequence[i]],['Posizione AB1',String(i+1)],['Phred originale',q===undefined?'assente':'Q'+q],['P(errore) nominale',q===undefined?'—':(100*Math.pow(10,-q/10)).toLocaleString('it-IT',{maximumSignificantDigits:3})+'%'],['Posizione rCRS',c?(c.rcrsPos===null?'inserzione':String(c.rcrsPos)):'non allineata'],['Posizione FASTA',c?(c.fastaPos===null?'inserzione':String(c.fastaPos)):'—']];
+    box.replaceChildren();fields.forEach(([label,value],index)=>{const item=element('div',undefined,'inspect-item');item.append(element('small',label));const strong=element('strong',value,index===0?'base-large':'');if(index===0)strong.style.color=colors[read.sequence[i]]||'#8b7b89';item.append(strong);box.append(item);});
+    if(c&&state.result.orientation==='reverse')box.append(element('span','Nel confronto con la reference questa base è complementata: '+c.readBase+'.','small muted'));
+  }
+  function jumpToRead(index) {
+    if(!state.read)return;state.selected=Math.max(0,Math.min(state.read.sequence.length-1,index));
+    state.viewStart=Math.max(0,state.selected-Math.floor(Number($('view-count').value)/2));$('jump-base').value=state.selected+1;
+    syncTraceControls();drawTrace();renderInspector();
+  }
+  function analyze() {
+    let r;try{r=region();}catch(error){status(error.message,'error');return;}
+    if(!state.read.qualities){status('Phred assenti: non è possibile eseguire questa analisi con qualità.','error');return;}
+    invalidate();state.busy=true;const token=state.run;toggleControls();text('analyze','Allineamento in corso…');
+    status('Allineamento circolare in corso. Confronto della lettura e del reverse complement…','busy');
+    const payload={sequence:state.read.sequence.slice(r.start,r.end),qualities:state.read.qualities.slice(r.start,r.end),reference:state.reference.sequence,
+      options:{origin:state.origin,circular:true,orientation:$('orientation').value,trimStart:r.start}};
+    const source=$('sanger-core').textContent+'\nself.onmessage=function(e){try { self.postMessage({result:SangerCore.alignRead(e.data.sequence,e.data.qualities,e.data.reference,e.data.options)}); } catch(err){self.postMessage({error:err.message});}};';
+    const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));const started=performance.now();
+    try {
+      const worker=new Worker(url);URL.revokeObjectURL(url);state.worker=worker;
+      const finish=()=>{worker.terminate();if(state.worker===worker)state.worker=null;state.busy=false;toggleControls();text('analyze','Allinea alla rCRS →');};
+      worker.onmessage=event=>{if(token!==state.run)return;finish();if(event.data.error){status(event.data.error,'error');return;}state.elapsed=performance.now()-started;state.result=event.data.result;state.analysisTrim={...r,method:state.trimMethod,cutoff:state.trimMethod==='Mott'?state.trimCutoff:null};state.mapping=new Map(state.result.columns.filter(c=>c.readIndex0!==null).map(c=>[c.readIndex0,c]));state.alignmentPage=0;renderResults();renderStats();drawTrace();renderInspector();const count=state.result.variants.length;status(state.result.summary.accepted?`Allineamento completato: ${count} differenze candidate. Controlla qualità e picchi prima di interpretarle.`:'Allineamento non accettato dalle soglie di controllo. Esamina gli avvisi e il trimming.',state.result.summary.accepted?'':'error');};
+      worker.onerror=()=>{if(token!==state.run)return;finish();status('Il browser non ha completato il calcolo. Prova a ricaricare il file o apri il tool da un sito HTTPS.','error');};
+      worker.postMessage(payload);
+    } catch(error){URL.revokeObjectURL(url);state.busy=false;toggleControls();text('analyze','Allinea alla rCRS →');status('Impossibile avviare il calcolo nel browser: '+error.message,'error');}
+  }
+  function renderResults() {
+    const result=state.result,s=result.summary;$('result-empty').hidden=true;$('result-content').hidden=false;
+    text('alignment-state',s.accepted?'Allineato · da revisionare':'Non accettato');$('alignment-state').className='pill '+(s.accepted?'ok':'warn');
+    const summary=$('alignment-summary');summary.replaceChildren();
+    for(const [label,value] of [['Orientamento',result.orientation==='forward'?'forward':'reverse complement'],['Identità',(100*s.identity).toLocaleString('it-IT',{maximumFractionDigits:2})+'%'],['Basi della lettura',number(s.readLength)],['Score',String(result.score)],['Passaggio origine',s.wrapsRcrs?'16.569 → 1':'no']]){const span=element('span',label+': ');span.append(element('strong',value));summary.append(span);}
+    const warnings=$('result-warnings');warnings.replaceChildren();for(const warning of result.warnings)warnings.append(element('p',warning));
+    if(result.variants.some(v=>v.quality!==null&&v.quality>=20&&v.quality<30))warnings.append(element('p','Alcune differenze hanno Q fra 20 e 29. Meritano una revisione particolarmente attenta dei picchi.'));
+    text('variant-count',result.variants.length);renderVariants();renderAlignment();
+  }
+  function anchorText(v,coord) {
+    if(v.type==='INS')return (v.leftAnchor?.[coord]??'?')+' | '+(v.rightAnchor?.[coord]??'?');
+    const positions=coord==='rcrsPos'?v.positions:v.fastaPositions;
+    return positions?.length>1?positions[0]+'–'+positions.at(-1):String(v[coord]??'—');
+  }
+  function variantIndex(v) {
+    if(v.readPos!==null)return v.readPos-1;
+    const c=state.result.columns.find(c=>c.readPos!==null&&(c.rcrsPos===v.leftAnchor?.rcrsPos||c.rcrsPos===v.rightAnchor?.rcrsPos));return c?c.readPos-1:null;
+  }
+  function renderVariants() {
+    const body=$('variants-body');body.replaceChildren();const variants=state.result.variants;
+    $('no-variants').hidden=variants.length!==0;$('variants-table').hidden=variants.length===0;
+    for(const v of variants){const tr=element('tr');const type=element('td');type.append(element('span',v.type==='AMBIGUOUS'?'AMB':v.type,'variant-type'+(['INS','DEL'].includes(v.type)?' indel':'')));tr.append(type);
+      tr.append(element('td',anchorText(v,'rcrsPos')),element('td',anchorText(v,'fastaPos')),element('td',(v.ref||'−')+' → '+(v.alt||'−')));
+      const q=element('td',v.quality===null?(v.flankQuality===null?'—':'fianchi ≥ '+v.flankQuality):String(v.quality),v.lowQuality?'low-quality':'');tr.append(q);
+      let note=v.type==='SNP'?(v.quality<20?'Qualità bassa · rivedere':v.quality<30?'Q20–29 · rivedere':'Candidata · verificare il picco'):v.type==='AMBIGUOUS'?'Base ambigua · non risolta':v.placementAmbiguous?'Ripetizione · posizione non univoca':'Indel · rappresentazione non normalizzata';
+      if(v.type==='INS')note+='; coordinate fra le due ancore';if(v.type==='DEL')note+='; Q dei fianchi';
+      tr.append(element('td',note,'note-cell'));const action=element('td');const index=variantIndex(v);if(index!==null){const button=element('button','Vedi picco','button small-button');button.addEventListener('click',()=>{jumpToRead(index);$('trace-title').scrollIntoView({behavior:'smooth',block:'start'});});action.append(button);}else action.textContent='—';tr.append(action);body.append(tr);
+    }
+  }
+  function renderAlignment() {
+    if(!state.result)return;const columns=state.result.columns,size=40;const max=Math.max(0,Math.floor((columns.length-1)/size));state.alignmentPage=Math.max(0,Math.min(max,state.alignmentPage));
+    const start=state.alignmentPage*size,end=Math.min(start+size,columns.length),slice=columns.slice(start,end);text('align-range',`Colonne ${start+1}–${end} / ${columns.length}`);$('align-prev').disabled=state.alignmentPage===0;$('align-next').disabled=state.alignmentPage===max;
+    const table=element('table',undefined,'alignment-grid');const body=element('tbody');
+    for(const row of [{name:'rCRS',key:'rcrsPos',coord:true},{name:'FASTA',key:'fastaPos',coord:true},{name:'Reference',key:'refBase'},{name:'Lettura',key:'readBase'},{name:'Q',key:'quality'},{name:'AB1',key:'readPos',coord:true}]){const tr=element('tr');tr.append(element('th',row.name,'row-name'));for(const c of slice){let val=c[row.key];if(val===null)val=row.key.includes('Pos')&&c.op==='I'?'+':'−';const td=element('td',String(val),(row.coord?'coord ':'')+(['X','I','D','?'].includes(c.op)?'mismatch ':'')+(c.lowQuality?'lowq ':'')+(c.rcrsPos===1?'origin-cell ':'')+(c.readIndex0!==null?'base-click':''));if(row.key==='readBase'||row.key==='refBase')td.style.color=colors[c[row.key]]||'#787471';if(c.readIndex0!==null)td.addEventListener('click',()=>jumpToRead(c.readIndex0));tr.append(td);}body.append(tr);}table.append(body);$('alignment-grid').replaceChildren(table);
+  }
+  function download(name,content,type='text/plain;charset=utf-8') {
+    const url=URL.createObjectURL(new Blob([content],{type}));const a=element('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  const wrap=seq=>(seq.match(/.{1,80}/g)||[]).join('\n');
+  const cleanName=name=>name.replace(/\.[^.]+$/,'').replace(/[^A-Za-z0-9_-]/g,'_').slice(0,100)||'lettura';
+  const cell=value=>String(value??'').replace(/[\t\r\n]/g,' ');
+  const tsv=rows=>rows.map(row=>row.map(cell).join('\t')).join('\n')+'\n';
+  function report() {
+    return {tool:'SangerLab',version:Core.VERSION,generatedAt:new Date().toISOString(),input:{fileName:state.read.fileName,sha256:state.readHash,baseCount:state.read.sequence.length,tags:state.read.tags},reference:{name:state.reference.name,accession:'NC_012920.1',sequenceSha256:state.referenceHash,length:N,originRcrs1:state.origin,exactRotationVerified:true},coordinateConvention:'All public positions 1-based; trim.start zero-based inclusive, trim.end zero-based exclusive. Insertions between leftAnchor/rightAnchor; not mitochondrial-normalized.',trim:state.analysisTrim,analysis:state.result,elapsedMs:state.elapsed,scope:'Single original basecaller read; no consensus, no heteroplasmy estimate, no haplogroup assignment.'};
+  }
+  function exportResults(kind) {
+    if(!state.result)return;const name=cleanName(state.read.fileName),r=state.result,s=r.summary,trim=state.analysisTrim;
+    const label=`${name} trim_AB1=${trim.start+1}-${trim.end} orientation=${r.orientation} rCRS=${s.rcrsStart}-${s.rcrsEnd} wraps_origin=${s.wrapsRcrs} accepted=${s.accepted}`;
+    if(kind==='fasta')download(name+'_trimmed.fasta','>'+label+'\n'+wrap(r.sequence)+'\n');
+    if(kind==='alignment')download(name+'_alignment.fasta','>rCRS_aligned rCRS='+s.rcrsStart+'-'+s.rcrsEnd+'\n'+wrap(r.alignment.reference)+'\n>'+label+'\n'+wrap(r.alignment.query)+'\n');
+    if(kind==='variants'){
+      const rows=[['type','rcrs_position_or_between_anchors','fasta_position_or_between_anchors','ref','alt','read_pos_AB1','basecaller_phred','flank_phred_min','low_quality_Q20','placement_ambiguous','left_anchor_rcrs','right_anchor_rcrs','left_anchor_observed','right_anchor_observed','alignment_accepted','note']];
+      for(const v of r.variants)rows.push([v.type,anchorText(v,'rcrsPos'),anchorText(v,'fastaPos'),v.ref,v.alt,v.readPos,v.quality,v.flankQuality,v.lowQuality,v.placementAmbiguous,v.leftAnchor?.rcrsPos,v.rightAnchor?.rcrsPos,v.leftAnchor?.observed,v.rightAnchor?.observed,s.accepted,v.note]);
+      download(name+'_differences.tsv',tsv(rows),'text/tab-separated-values;charset=utf-8');
+    }
+    if(kind==='quality'){
+      const rows=[['read_position_AB1','original_base','original_phred','retained','fasta_position','rcrs_position','aligned_base','alignment_op']];
+      for(let i=0;i<state.read.sequence.length;i++){const c=state.mapping.get(i);rows.push([i+1,state.read.sequence[i],state.read.qualities?.[i],i>=trim.start&&i<trim.end,c?.fastaPos,c?.rcrsPos,c?.readBase,c?.op]);}
+      download(name+'_qualities.tsv',tsv(rows),'text/tab-separated-values;charset=utf-8');
+    }
+    if(kind==='report')download(name+'_report.json',JSON.stringify(report(),null,2)+'\n','application/json');
+  }
+  $('ab1-file').addEventListener('change',event=>loadRead(event.target.files[0]));
+  $('fasta-file').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{if(file.size>1000000)throw new Error('FASTA troppo grande per questa versione mtDNA.');setReference(Core.parseFasta(await file.text()));status('Reference verificata base per base. Prima posizione FASTA = rCRS '+state.origin+'. Ricalcola l’allineamento.');}catch(error){status(error.message,'error');}});
+  $('restore-reference').addEventListener('click',()=>{setReference({name:bundled.name,sequence:bundled.sequence});status('Reference rCRS_15990 ripristinata.');});
+  $('auto-trim').addEventListener('click',()=>trimAuto());$('cutoff').addEventListener('change',()=>trimAuto());
+  for(const id of ['trim-start','trim-end'])$(id).addEventListener('input',()=>{invalidate();state.autoEmpty=false;state.trimMethod='manuale';updateTrimInfo();status('Intervallo modificato. Premi «Allinea alla rCRS» per aggiornare i risultati.');});
+  $('orientation').addEventListener('change',()=>{invalidate();status('Orientamento modificato. Ricalcola l’allineamento.');});
+  $('reset-trim').addEventListener('click',()=>{invalidate();state.autoEmpty=false;state.trimMethod='nessuno';$('trim-start').value=1;$('trim-end').value=state.read.sequence.length;updateTrimInfo();status('Tutte le basi sono conservate. Controlla le estremità prima di allineare.');});
+  $('analyze').addEventListener('click',analyze);
+  $('view-count').addEventListener('change',()=>{syncTraceControls();drawTrace();});
+  $('trace-slider').addEventListener('input',event=>{state.viewStart=Number(event.target.value);drawTrace();});
+  $('prev-trace').addEventListener('click',()=>{state.viewStart-=Math.ceil(Number($('view-count').value)*.7);drawTrace();});
+  $('next-trace').addEventListener('click',()=>{state.viewStart+=Math.ceil(Number($('view-count').value)*.7);drawTrace();});
+  const jump=()=>{const n=Number($('jump-base').value);if(Number.isInteger(n)&&n>=1&&n<=state.read.sequence.length)jumpToRead(n-1);};
+  $('jump-button').addEventListener('click',jump);$('jump-base').addEventListener('keydown',e=>{if(e.key==='Enter')jump();});
+  $('trace-canvas').addEventListener('pointerdown',event=>{if(!plotGeometry)return;const rect=$('trace-canvas').getBoundingClientRect(),x=event.clientX-rect.left,g=plotGeometry;const sample=g.sampleLo+(x-g.left)/g.width*(g.sampleHi-g.sampleLo);let best=g.lo;for(let i=g.lo+1;i<g.hi;i++)if(Math.abs(state.read.peakPositions[i]-sample)<Math.abs(state.read.peakPositions[best]-sample))best=i;state.selected=best;$('jump-base').value=best+1;drawTrace();renderInspector();});
+  for(const [tab,other,panel,otherPanel] of [['tab-variants','tab-alignment','variants-panel','alignment-panel'],['tab-alignment','tab-variants','alignment-panel','variants-panel']])$(tab).addEventListener('click',()=>{$(tab).className='tab active';$(tab).setAttribute('aria-selected','true');$(other).className='tab';$(other).setAttribute('aria-selected','false');$(panel).hidden=false;$(otherPanel).hidden=true;});
+  $('align-prev').addEventListener('click',()=>{state.alignmentPage--;renderAlignment();});$('align-next').addEventListener('click',()=>{state.alignmentPage++;renderAlignment();});
+  for(const kind of ['fasta','alignment','variants','quality','report'])$('export-'+kind).addEventListener('click',()=>exportResults(kind));
+  const drop=$('read-drop');for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('dragging');});
+  for(const name of ['dragleave','drop'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.remove('dragging');if(name==='drop')loadRead(e.dataTransfer.files[0]);});
+  new ResizeObserver(()=>drawTrace()).observe($('trace-canvas'));
+  setReference({name:bundled.name,sequence:bundled.sequence});
+  // Read-only snapshot for reproducible browser QA; no internal ABI metadata exposed.
+  globalThis.SangerLab={getReport:()=>state.result?report():null};
+})();
+</script>
+</body>
+</html>

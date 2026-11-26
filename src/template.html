@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6941a5">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>SangerLab · D-loop e coordinate rCRS</title>
+  <style>/*__STYLE__*/</style>
+</head>
+<body>
+  <header class="topbar"><div class="topinner">
+    <a class="brand" href="#main" aria-label="SangerLab, inizio">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#6941a5"/><path d="M7 28c5 0 3-18 8-18s3 18 7 18 3-12 8-12h3" fill="none" stroke="white" stroke-width="2.2"/><path d="M7 28c5 0 7-9 11-9s6 9 15 9" fill="none" stroke="#d9c7f2" stroke-width="1.8"/></svg>
+      <span>SangerLab<small>GENETICA DELLA CONSERVAZIONE</small></span>
+    </a>
+    <div class="header-tags"><span class="version">0.1 · UI viola</span><span class="local-badge"><span aria-hidden="true">●</span> Analisi locale</span></div>
+  </div></header>
+  <main id="main">
+    <section class="hero">
+      <div><h1>Analisi di sequenze Sanger</h1><p class="intro">Controllo qualità, trimming e allineamento del DNA mitocondriale umano alla rCRS.</p></div>
+      <aside class="reference-hero"><div class="circle-wrap"><svg viewBox="0 0 130 130" aria-label="Il DNA mitocondriale è circolare"><circle cx="65" cy="65" r="48" fill="none" stroke="#e6dff0" stroke-width="7"/><path d="M48.6 19.9 A48 48 0 0 1 81.4 19.9" fill="none" stroke="#6941a5" stroke-width="7" stroke-linecap="round"/><line x1="65" y1="9" x2="65" y2="26" stroke="#bd722a" stroke-width="2"/><text x="65" y="61" text-anchor="middle" fill="#252333" font-size="17" font-weight="650">mtDNA</text><text x="65" y="79" text-anchor="middle" fill="#656274" font-size="11">16.569 posizioni</text></svg></div><div><p class="eyebrow">REFERENCE CIRCOLARE</p><p class="reference-route">15.990 → 16.569<br><span>1 → 15.989</span></p><p class="small muted">Reference iniziale: rCRS_15990<br>NC_012920.1 · rotazione verificata</p></div></aside>
+    </section>
+
+    <div id="status" class="status" role="status" aria-live="polite">Carica un file .ab1 per cominciare. La reference rCRS ruotata è già disponibile.</div>
+
+    <section class="card setup" aria-labelledby="setup-title">
+      <div class="section-head"><div><p class="eyebrow">01</p><h2 id="setup-title">File e parametri di analisi</h2></div><span class="muted small">File elaborati in memoria, senza invio a server</span></div>
+      <div class="file-grid">
+        <div class="file-box" id="read-drop"><div class="file-icon">AB1</div><div class="file-info"><h3 id="read-name">Cromatogramma Sanger</h3><p id="read-meta">Apri il file originale prodotto dal sequenziatore.</p></div><label class="button primary file-button" for="ab1-file">Apri .ab1</label><input id="ab1-file" class="file-input" type="file" accept=".ab1,.abi" aria-label="Carica cromatogramma AB1"></div>
+        <div class="file-box"><div class="file-icon secondary">FA</div><div class="file-info"><h3 id="reference-name">rCRS_15990</h3><p id="reference-meta">16.569 posizioni · origine rCRS 15.990</p></div><label class="button file-button" for="fasta-file">Cambia FASTA</label><input id="fasta-file" class="file-input" type="file" accept=".fasta,.fa,.fna,.fas,.txt" aria-label="Carica reference FASTA"></div>
+      </div>
+      <details class="reference-details"><summary>Come viene verificata la reference?</summary><p>Il FASTA deve contenere la rCRS completa NC_012920.1, originale o ruotata. La sequenza viene confrontata base per base con la rCRS inclusa nel tool: l'origine viene ricavata dalla sequenza, mai dal solo nome. Si conserva anche la N convenzionale in posizione 3107. Reference differenti o frammentarie sono rifiutate in questa versione.</p><p id="coordinate-example"></p><button id="restore-reference" class="button small-button">Ripristina rCRS_15990</button></details>
+      <div class="controls-grid">
+        <label class="field">Trimming automatico<select id="cutoff"><option value="0.01" selected>Mott · p = 0,01</option><option value="0.05">Mott · p = 0,05</option><option value="0.001">Mott · p = 0,001</option></select><span>Seleziona il segmento con miglior qualità cumulativa.</span></label>
+        <label class="field">Prima base conservata<input type="number" id="trim-start" min="1" value="1" inputmode="numeric" disabled><span>Posizione originale AB1, inclusa.</span></label>
+        <label class="field">Ultima base conservata<input type="number" id="trim-end" min="1" value="1" inputmode="numeric" disabled><span>Posizione originale AB1, inclusa.</span></label>
+        <label class="field">Orientamento<select id="orientation"><option value="auto">Automatico · confronta entrambi</option><option value="forward">Come nel file AB1</option><option value="reverse">Reverse complement</option></select><span>L'allineamento segue il verso della reference.</span></label>
+      </div>
+      <div class="action-row"><button id="auto-trim" class="button" disabled>Ricalcola trimming</button><button id="reset-trim" class="button quiet" disabled>Conserva tutte le basi</button><span id="trim-info" class="small muted">Il trimming sarà proposto al caricamento.</span><button id="analyze" class="button primary analyze" disabled>Allinea alla rCRS <span aria-hidden="true">→</span></button></div>
+      <p class="method-note">Il trimming Mott rimuove le estremità sfavorevoli: può conservare singole basi con Q bassa all'interno del segmento. Nessuna base viene corretta automaticamente.</p>
+    </section>
+
+    <section class="stats" aria-label="Riepilogo analisi"><div class="stat"><span>Lettura originale</span><strong id="stat-length">—</strong><small id="stat-length-note">basi chiamate nel file</small></div><div class="stat"><span>Segmento conservato</span><strong id="stat-trim">—</strong><small id="stat-trim-note">dopo il trimming</small></div><div class="stat"><span>Qualità nel segmento</span><strong id="stat-q">—</strong><small id="stat-q-note">percentuale di basi con Q ≥ 20</small></div><div class="stat"><span>Coordinate rCRS</span><strong id="stat-map" class="map-stat">—</strong><small id="stat-map-note">disponibili dopo l'allineamento</small></div></section>
+
+    <section class="card trace-card" aria-labelledby="trace-title">
+      <div class="section-head"><div><p class="eyebrow">02</p><h2 id="trace-title">Cromatogramma e qualità</h2></div><div class="legend"><span class="base-a">● A</span><span class="base-c">● C</span><span class="base-g">● G</span><span class="base-t">● T</span></div></div>
+      <div class="trace-toolbar"><div class="nav-buttons"><button id="prev-trace" class="button square" aria-label="Tratto precedente" disabled>←</button><button id="next-trace" class="button square" aria-label="Tratto successivo" disabled>→</button></div><label class="inline-field">Basi in vista<select id="view-count"><option>30</option><option selected>50</option><option>80</option><option>120</option></select></label><label class="inline-field jump-field">Vai alla base AB1<input type="number" id="jump-base" value="1" min="1" inputmode="numeric" disabled><button id="jump-button" class="button" disabled>Vai</button></label><span id="trace-range" class="small muted">In attesa di un cromatogramma</span></div>
+      <div class="canvas-wrap"><canvas id="trace-canvas" aria-label="Cromatogramma, basi e barre di qualità. Tocca un picco per leggere i dettagli."></canvas><div id="trace-empty" class="empty-overlay"><div class="empty-symbol" aria-hidden="true">∿</div><h3>Nessun cromatogramma caricato.</h3><p>Carica un .ab1 e tocca una base per ispezionarla.</p></div></div>
+      <label class="slider-label" for="trace-slider">Scorri lungo la lettura<span id="slider-position"></span></label><input id="trace-slider" type="range" min="0" max="1" value="0" disabled aria-label="Posizione della finestra del cromatogramma">
+      <div id="base-inspector" class="inspector"><span class="muted">Seleziona una base nel cromatogramma. Le barre inferiori rappresentano i Phred score originali; la linea tratteggiata indica Q20.</span></div>
+      <div class="trace-foot"><span>Traccia sempre nel verso originale del file AB1.</span><span>Zone grigie = escluse dal trimming · Q &lt; 20 = qualità bassa</span></div>
+    </section>
+
+    <section class="card results-card" aria-labelledby="results-title"><div class="section-head"><div><p class="eyebrow">03</p><h2 id="results-title">Allineamento e differenze</h2></div><span id="alignment-state" class="pill">Da allineare</span></div>
+      <div id="result-empty" class="result-empty">Dopo il controllo del trimming, premi <strong>Allinea alla rCRS</strong>. Il programma cerca entrambe le orientazioni su una reference circolare.</div>
+      <div id="result-content" hidden>
+        <div id="alignment-summary" class="alignment-summary"></div><div id="result-warnings" class="result-warnings"></div>
+        <div class="results-tabs" role="tablist" aria-label="Risultati"><button id="tab-variants" class="tab active" role="tab" aria-selected="true" aria-controls="variants-panel">Differenze <span id="variant-count">0</span></button><button id="tab-alignment" class="tab" role="tab" aria-selected="false" aria-controls="alignment-panel">Allineamento base per base</button></div>
+        <div id="variants-panel" role="tabpanel" aria-labelledby="tab-variants"><p class="small muted">Differenze candidate rispetto alla reference. Tocca «Vedi picco» per tornare alla traccia. La qualità è quella della chiamata nel file, non una probabilità di variante.</p><div class="table-scroll"><table id="variants-table"><thead><tr><th>Tipo</th><th>rCRS</th><th>FASTA</th><th>Ref → lettura</th><th>Q</th><th>Valutazione</th><th>Traccia</th></tr></thead><tbody id="variants-body"></tbody></table></div><div id="no-variants" class="no-variants" hidden>Nessuna differenza nel segmento allineato.</div></div>
+        <div id="alignment-panel" role="tabpanel" aria-labelledby="tab-alignment" hidden><div class="alignment-nav"><button id="align-prev" class="button">← Precedenti</button><span id="align-range" class="small"></span><button id="align-next" class="button">Successive →</button></div><p class="small muted">Scorri orizzontalmente se necessario. Le celle gialle indicano differenze; quelle tratteggiate, qualità bassa. «+» = inserzione nella lettura; «−» = gap.</p><div class="table-scroll alignment-scroll" id="alignment-grid"></div></div>
+        <div class="export-row"><span class="eyebrow">ESPORTA</span><button id="export-fasta" class="button">Lettura FASTA</button><button id="export-alignment" class="button">Allineamento FASTA</button><button id="export-variants" class="button">Differenze TSV</button><button id="export-quality" class="button">Qualità TSV</button><button id="export-report" class="button">Report JSON</button></div>
+        <p class="method-note">Il FASTA contiene la lettura rifilata nell'orientamento della reference. Non è un consenso di più letture. Le regioni senza dati non vengono riempite con basi della reference.</p>
+      </div>
+    </section>
+
+    <section class="notes-grid"><details class="card notes" open><summary>Come leggere i risultati</summary><p>Una differenza è una candidata da controllare sul cromatogramma. Q20 corrisponde nominalmente a una probabilità di errore di chiamata dell'1%; Q30 allo 0,1%. Un Q elevato da solo non dimostra che una variante sia biologica.</p><p>Le inserzioni e le delezioni sono riportate con le basi di riferimento che le precedono e le seguono. Nelle ripetizioni, la posizione di un indel può non essere unica: la tabella non applica una nomenclatura mitocondriale standardizzata.</p></details><details class="card notes"><summary>Metodo, ambito e riproducibilità</summary><p>Allineamento semiglobale con gap affini: tutta la lettura conservata è allineata a un tratto della reference. Match +2, mismatch −3, apertura gap −6, estensione −1. La reference duplicata consente il passaggio attraverso l'origine; la numerazione viene poi riportata modulo 16.569.</p><p>Questa versione analizza una lettura alla volta. Non richiama i picchi, non misura l'eteroplasmia, non costruisce un consenso forward/reverse e non assegna aplogruppi. I Phred sono quelli già presenti nel file AB1.</p><p>Codice open source MIT. Parser adattato da <a href="https://github.com/animeshkundu/sanger-viewer" target="_blank" rel="noopener noreferrer">Sanger Viewer, Animesh</a>. Nessuna libreria esterna caricata, nessun account, nessun caricamento dei dati su server. Ricaricando la pagina si perde la sessione: esporta i risultati per conservarli.</p></details></section>
+    <footer><span>SangerLab · versione pilota 0.1 · 26 novembre 2026</span><span>Una base, una qualità, una coordinata.</span></footer>
+  </main>
+  <script id="sanger-reference" type="application/json">/*__REFERENCE__*/</script>
+  <script id="sanger-core">/*__CORE__*/</script>
+  <script>/*__ABIF__*/</script>
+  <script>/*__APP__*/</script>
+</body>
+</html>

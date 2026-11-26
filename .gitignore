@@ -1,0 +1,14 @@
+# Keep individual sequences, analyses and private fixtures out of public Git.
+*.ab1
+*.abi
+*_report.json
+*_differences.tsv
+*_qualities.tsv
+*_trimmed.fasta
+*_alignment.fasta
+validation/
+private/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store

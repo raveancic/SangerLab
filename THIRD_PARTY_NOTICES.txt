@@ -1,0 +1,72 @@
+SangerLab — avvisi relativi a componenti e fonti esterne
+
+1. Parser ABIF adattato da Sanger Viewer
+
+Progetto: https://github.com/animeshkundu/sanger-viewer
+Revisione ispezionata: 3ceda33e18dde1700f6a53414f58ad4b1d8989be
+File di origine: src/parsers/abif.ts
+https://raw.githubusercontent.com/animeshkundu/sanger-viewer/3ceda33e18dde1700f6a53414f58ad4b1d8989be/src/parsers/abif.ts
+
+In SangerLab il codice adattato è in src/abif.js e viene incluso in index.html.
+Sono stati aggiunti controlli di integrità e dei limiti, gestione coerente delle
+generazioni dei tag, lettura dei tipi numerici signed, verifica dell'ordine dei
+canali, esclusione dei metadati personali dello strumento e trasformazione
+coerente di sequenza/tracce/coordinate/qualità nel reverse complement.
+
+Non sono stati riutilizzati i moduli upstream per trimming e allineamento.
+
+La seguente licenza upstream è conservata integralmente:
+
+MIT License
+
+Copyright (c) 2026 Animesh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+2. Specifica ABIF
+
+Applied Biosystems, "ABIF File Format Specification and Sample File Schema",
+luglio 2006. Documento tecnico del produttore consultato per la struttura dei
+file e la semantica dei tag; non è incorporato nell'applicazione.
+https://archive.gfjc.fiu.edu/workshops/resources/literature/ABIF_File_Format.pdf
+
+3. Sequenza di riferimento
+
+La sequenza in assets/rCRS_15990.fasta e in index.html è una rotazione esatta
+della reference pubblica NCBI RefSeq NC_012920.1, Homo sapiens mitochondrion,
+complete genome. Contiene 16569 posizioni e conserva la N convenzionale alla
+posizione canonica 3107. La prima posizione della rotazione corrisponde alla
+posizione canonica 15990.
+https://www.ncbi.nlm.nih.gov/nuccore/NC_012920.1
+
+Questa è una reference pubblica, non la sequenza di un campione del laboratorio.
+L'attribuzione dei dati di riferimento non implica un'approvazione del software
+da parte di NCBI o degli autori della reference.
+
+4. Biopython per verifica indipendente
+
+Biopython può essere installato separatamente per eseguire
+tests/validate_biopython.py. Non è distribuito dentro SangerLab e non è una
+dipendenza dell'applicazione nel browser.
+https://biopython.org/
+https://github.com/biopython/biopython
+
+I test confrontano parsing e punteggi con un'implementazione indipendente.
+Non si deve attribuire a Biopython la validazione generale o l'approvazione di
+SangerLab: il risultato riguarda soltanto i casi effettivamente eseguiti.

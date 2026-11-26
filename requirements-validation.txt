@@ -1,0 +1,2 @@
+# Optional independent validation only; the browser app needs no packages.
+biopython==1.88
