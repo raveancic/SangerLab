@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#6941a5">
+  <meta name="theme-color" content="#fffaf0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; worker-src blob:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>SangerLab · D-loop e coordinate rCRS</title>
   <style>/*__STYLE__*/</style>
@@ -11,10 +11,10 @@
 <body>
   <header class="topbar"><div class="topinner">
     <a class="brand" href="#main" aria-label="SangerLab, inizio">
-      <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#6941a5"/><path d="M7 28c5 0 3-18 8-18s3 18 7 18 3-12 8-12h3" fill="none" stroke="white" stroke-width="2.2"/><path d="M7 28c5 0 7-9 11-9s6 9 15 9" fill="none" stroke="#d9c7f2" stroke-width="1.8"/></svg>
+      <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="5" fill="#ffda48" stroke="#171717" stroke-width="2"/><path d="M7 28c5 0 3-18 8-18s3 18 7 18 3-12 8-12h3" fill="none" stroke="#171717" stroke-width="2.2"/><path d="M7 28c5 0 7-9 11-9s6 9 15 9" fill="none" stroke="#6742a3" stroke-width="1.8"/></svg>
       <span>SangerLab<small>GENETICA DELLA CONSERVAZIONE</small></span>
     </a>
-    <div class="header-tags"><span class="version">0.1 · UI viola</span><span class="local-badge"><span aria-hidden="true">●</span> Analisi locale</span></div>
+    <div class="header-tags"><span class="version">0.1.1</span><span class="local-badge"><span aria-hidden="true">●</span> Analisi locale</span></div>
   </div></header>
   <main id="main">
     <section class="hero">
@@ -32,7 +32,7 @@
       </div>
       <details class="reference-details"><summary>Come viene verificata la reference?</summary><p>Il FASTA deve contenere la rCRS completa NC_012920.1, originale o ruotata. La sequenza viene confrontata base per base con la rCRS inclusa nel tool: l'origine viene ricavata dalla sequenza, mai dal solo nome. Si conserva anche la N convenzionale in posizione 3107. Reference differenti o frammentarie sono rifiutate in questa versione.</p><p id="coordinate-example"></p><button id="restore-reference" class="button small-button">Ripristina rCRS_15990</button></details>
       <div class="controls-grid">
-        <label class="field">Trimming automatico<select id="cutoff"><option value="0.01" selected>Mott · p = 0,01</option><option value="0.05">Mott · p = 0,05</option><option value="0.001">Mott · p = 0,001</option></select><span>Seleziona il segmento con miglior qualità cumulativa.</span></label>
+        <div class="field"><div class="field-heading"><label for="cutoff">Trimming automatico</label><button type="button" class="help-trigger" id="help-trim" aria-haspopup="dialog" aria-controls="trim-dialog" aria-label="Come funziona il trimming Mott?">?</button></div><select id="cutoff"><option value="0.05">Mott · p = 0,05 (meno restrittivo)</option><option value="0.01" selected>Mott · p = 0,01</option><option value="0.001">Mott · p = 0,001 (più restrittivo)</option></select><span>Seleziona il segmento con miglior punteggio cumulativo.</span></div>
         <label class="field">Prima base conservata<input type="number" id="trim-start" min="1" value="1" inputmode="numeric" disabled><span>Posizione originale AB1, inclusa.</span></label>
         <label class="field">Ultima base conservata<input type="number" id="trim-end" min="1" value="1" inputmode="numeric" disabled><span>Posizione originale AB1, inclusa.</span></label>
         <label class="field">Orientamento<select id="orientation"><option value="auto">Automatico · confronta entrambi</option><option value="forward">Come nel file AB1</option><option value="reverse">Reverse complement</option></select><span>L'allineamento segue il verso della reference.</span></label>
@@ -44,12 +44,12 @@
     <section class="stats" aria-label="Riepilogo analisi"><div class="stat"><span>Lettura originale</span><strong id="stat-length">—</strong><small id="stat-length-note">basi chiamate nel file</small></div><div class="stat"><span>Segmento conservato</span><strong id="stat-trim">—</strong><small id="stat-trim-note">dopo il trimming</small></div><div class="stat"><span>Qualità nel segmento</span><strong id="stat-q">—</strong><small id="stat-q-note">percentuale di basi con Q ≥ 20</small></div><div class="stat"><span>Coordinate rCRS</span><strong id="stat-map" class="map-stat">—</strong><small id="stat-map-note">disponibili dopo l'allineamento</small></div></section>
 
     <section class="card trace-card" aria-labelledby="trace-title">
-      <div class="section-head"><div><p class="eyebrow">02</p><h2 id="trace-title">Cromatogramma e qualità</h2></div><div class="legend"><span class="base-a">● A</span><span class="base-c">● C</span><span class="base-g">● G</span><span class="base-t">● T</span></div></div>
+      <div class="section-head"><div><p class="eyebrow">02</p><div class="field-heading"><h2 id="trace-title">Cromatogramma e qualità</h2><button type="button" class="help-trigger" id="help-quality" aria-haspopup="dialog" aria-controls="quality-dialog" aria-label="Come si interpretano i punteggi Phred?">?</button></div></div><div class="legend"><span class="base-a">● A</span><span class="base-c">● C</span><span class="base-g">● G</span><span class="base-t">● T</span></div></div>
       <div class="trace-toolbar"><div class="nav-buttons"><button id="prev-trace" class="button square" aria-label="Tratto precedente" disabled>←</button><button id="next-trace" class="button square" aria-label="Tratto successivo" disabled>→</button></div><label class="inline-field">Basi in vista<select id="view-count"><option>30</option><option selected>50</option><option>80</option><option>120</option></select></label><label class="inline-field jump-field">Vai alla base AB1<input type="number" id="jump-base" value="1" min="1" inputmode="numeric" disabled><button id="jump-button" class="button" disabled>Vai</button></label><span id="trace-range" class="small muted">In attesa di un cromatogramma</span></div>
       <div class="canvas-wrap"><canvas id="trace-canvas" aria-label="Cromatogramma, basi e barre di qualità. Tocca un picco per leggere i dettagli."></canvas><div id="trace-empty" class="empty-overlay"><div class="empty-symbol" aria-hidden="true">∿</div><h3>Nessun cromatogramma caricato.</h3><p>Carica un .ab1 e tocca una base per ispezionarla.</p></div></div>
       <label class="slider-label" for="trace-slider">Scorri lungo la lettura<span id="slider-position"></span></label><input id="trace-slider" type="range" min="0" max="1" value="0" disabled aria-label="Posizione della finestra del cromatogramma">
       <div id="base-inspector" class="inspector"><span class="muted">Seleziona una base nel cromatogramma. Le barre inferiori rappresentano i Phred score originali; la linea tratteggiata indica Q20.</span></div>
-      <div class="trace-foot"><span>Traccia sempre nel verso originale del file AB1.</span><span>Zone grigie = escluse dal trimming · Q &lt; 20 = qualità bassa</span></div>
+      <p id="trace-alignment-note" class="small muted" aria-live="polite">Reference e campione allineato disponibili dopo l’allineamento.</p><div class="trace-foot"><span>Traccia nel verso rCRS dopo un allineamento accettato; prima, nel verso originale AB1.</span><span>Zone grigie = escluse dal trimming · Q &lt; 20 = qualità bassa</span></div>
     </section>
 
     <section class="card results-card" aria-labelledby="results-title"><div class="section-head"><div><p class="eyebrow">03</p><h2 id="results-title">Allineamento e differenze</h2></div><span id="alignment-state" class="pill">Da allineare</span></div>
@@ -65,8 +65,30 @@
     </section>
 
     <section class="notes-grid"><details class="card notes" open><summary>Come leggere i risultati</summary><p>Una differenza è una candidata da controllare sul cromatogramma. Q20 corrisponde nominalmente a una probabilità di errore di chiamata dell'1%; Q30 allo 0,1%. Un Q elevato da solo non dimostra che una variante sia biologica.</p><p>Le inserzioni e le delezioni sono riportate con le basi di riferimento che le precedono e le seguono. Nelle ripetizioni, la posizione di un indel può non essere unica: la tabella non applica una nomenclatura mitocondriale standardizzata.</p></details><details class="card notes"><summary>Metodo, ambito e riproducibilità</summary><p>Allineamento semiglobale con gap affini: tutta la lettura conservata è allineata a un tratto della reference. Match +2, mismatch −3, apertura gap −6, estensione −1. La reference duplicata consente il passaggio attraverso l'origine; la numerazione viene poi riportata modulo 16.569.</p><p>Questa versione analizza una lettura alla volta. Non richiama i picchi, non misura l'eteroplasmia, non costruisce un consenso forward/reverse e non assegna aplogruppi. I Phred sono quelli già presenti nel file AB1.</p><p>Codice open source MIT. Parser adattato da <a href="https://github.com/animeshkundu/sanger-viewer" target="_blank" rel="noopener noreferrer">Sanger Viewer, Animesh</a>. Nessuna libreria esterna caricata, nessun account, nessun caricamento dei dati su server. Ricaricando la pagina si perde la sessione: esporta i risultati per conservarli.</p></details></section>
-    <footer><span>SangerLab · versione pilota 0.1 · 26 novembre 2026</span><span>Una base, una qualità, una coordinata.</span></footer>
+    <footer><span>SangerLab · versione pilota 0.1.1 · 26 novembre 2026</span></footer>
   </main>
+  <dialog id="trim-dialog" class="help-dialog" aria-labelledby="trim-dialog-title">
+    <div class="help-dialog-head"><h2 id="trim-dialog-title">Come funziona il trimming?</h2><button type="button" class="button square help-close" aria-label="Chiudi spiegazione del trimming" autofocus>×</button></div>
+    <div class="help-dialog-body">
+      <p>Il trimming esclude le estremità della lettura Sanger in cui le chiamate delle basi sono meno affidabili. SangerLab usa una variante dell'algoritmo <strong>Mott</strong>, basata sui punteggi Phred già presenti nel file AB1.</p>
+      <h3>Come viene scelto il segmento?</h3>
+      <ol><li>Per ogni base, converte la qualità Q in probabilità nominale di errore: P = 10<sup>−Q/10</sup>.</li><li>Calcola il punteggio della base: <strong>p − P</strong>, dove p è il cutoff scelto nel menu.</li><li>Conserva il segmento contiguo con la somma positiva più alta dei punteggi. Se non esiste un segmento con somma positiva, non propone alcun intervallo.</li></ol>
+      <div class="help-formula">Punteggio per base = p − 10<sup>−Q/10</sup></div>
+      <table class="help-table"><caption>Significato del cutoff Mott</caption><thead><tr><th scope="col">Cutoff p</th><th scope="col">Qualità di pareggio</th><th scope="col">Effetto atteso</th></tr></thead><tbody><tr><td>0,05 (5%)</td><td>Q ≈ 13</td><td>Meno restrittivo</td></tr><tr><td>0,01 (1%)</td><td>Q = 20</td><td>Intermedio (predefinito)</td></tr><tr><td>0,001 (0,1%)</td><td>Q = 30</td><td>Più restrittivo</td></tr></tbody></table>
+      <p><strong>Attenzione:</strong> la qualità di pareggio è quella per cui il contributo della singola base è zero, non un filtro rigido. Anche basi con qualità inferiore possono rimanere all'interno del segmento, se compensate da basi di qualità elevata. Il cutoff non è una probabilità di errore dell'intero segmento.</p>
+      <h3>Come controllare il risultato?</h3><p>Le regioni escluse appaiono in grigio nel cromatogramma. Puoi cambiare il cutoff, oppure modificare manualmente la prima e l'ultima base conservata (posizioni AB1 incluse). Controlla sempre i picchi e le basi a bassa qualità prima di allineare. Il file originale non viene modificato.</p>
+    </div>
+  </dialog>
+  <dialog id="quality-dialog" class="help-dialog" aria-labelledby="quality-dialog-title">
+    <div class="help-dialog-head"><h2 id="quality-dialog-title">Che cos'è il Phred score?</h2><button type="button" class="button square help-close" aria-label="Chiudi spiegazione della qualità" autofocus>×</button></div>
+    <div class="help-dialog-body">
+      <p>Il punteggio Phred (Q) esprime su scala logaritmica la probabilità nominale che una base sia stata chiamata in modo errato dal basecaller. Più alto è Q, più affidabile è la chiamata, se i punteggi sono ben calibrati.</p>
+      <div class="help-formula">Q = −10 log<sub>10</sub>(P<sub>errore</sub>)</div>
+      <table class="help-table"><caption>Qualità e probabilità di errore per base</caption><thead><tr><th scope="col">Phred</th><th scope="col">Probabilità di errore</th><th scope="col">Accuratezza nominale</th></tr></thead><tbody><tr><td>Q10</td><td>10%</td><td>90%</td></tr><tr><td>Q20</td><td>1%</td><td>99%</td></tr><tr><td>Q30</td><td>0,1%</td><td>99,9%</td></tr><tr><td>Q40</td><td>0,01%</td><td>99,99%</td></tr></tbody></table>
+      <p>Nel grafico, la linea tratteggiata indica Q20. Le barre viola rappresentano Q ≥ 20, quelle arancioni Q &lt; 20. La percentuale di qualità nel riepilogo è la frazione di basi conservate con Q ≥ 20, non l'accuratezza complessiva della lettura.</p>
+      <p>I Phred sono quelli originali del file AB1: SangerLab non li ricalcola dall'altezza dei picchi. Una base con Q elevato non dimostra da sola che la differenza dalla reference sia una variante biologica. Controlla il cromatogramma.</p>
+    </div>
+  </dialog>
   <script id="sanger-reference" type="application/json">/*__REFERENCE__*/</script>
   <script id="sanger-core">/*__CORE__*/</script>
   <script>/*__ABIF__*/</script>

@@ -1,4 +1,4 @@
-# SangerLab — D-loop e coordinate rCRS
+# SangerLab v0.1.1 — D-loop e coordinate rCRS
 
 Piccolo strumento didattico per analizzare **una lettura Sanger mitocondriale alla volta**: cromatogramma AB1, qualità Phred, trimming e allineamento a una reference circolare, con numerazione rCRS originale.
 
@@ -11,7 +11,7 @@ Il file `index.html` contiene l'applicazione completa. Il calcolo avviene nel br
 3. La reference inclusa è la rCRS completa **NC_012920.1**, ruotata per iniziare dalla posizione canonica **15.990**. Con **Cambia FASTA** puoi usare la stessa rCRS in un'altra rotazione, inclusa quella canonica.
 4. Controlla il trimming proposto. Puoi cambiare il cutoff Mott, modificare gli estremi manualmente oppure conservare tutte le basi.
 5. Premi **Allinea alla rCRS**. La modalità automatica confronta la lettura e il suo reverse complement.
-6. Esamina le differenze e usa **Vedi picco** per controllare il cromatogramma nella posizione corrispondente.
+6. Confronta le righe Reference e Campione sopra i picchi; i pulsanti `?` spiegano Mott e Phred. Esamina le differenze e usa **Vedi picco** per controllare il cromatogramma nella posizione corrispondente.
 7. Esporta i risultati necessari prima di chiudere o ricaricare la pagina.
 
 La sessione rimane in memoria e non viene salvata automaticamente.
@@ -30,7 +30,7 @@ Servono un browser moderno con JavaScript, File API, Canvas, Pointer Events, Blo
 |---|---|
 | Lettura AB1 | Legge basi, qualità, coordinate dei picchi e quattro tracce analizzate; usa l'ordine dei canali dichiarato nel file. |
 | Qualità | Visualizza i Phred del basecaller presenti nel file; non li ricalcola dalla fluorescenza. |
-| Cromatogramma | Mantiene il verso originale del file anche quando l'allineamento sceglie il reverse complement. |
+| Cromatogramma | Prima dell'allineamento mostra il verso originale; dopo un allineamento accettato, mostra il cromatogramma nel verso rCRS, invertendo l'asse e complementando i canali se necessario. Le posizioni e le qualità AB1 restano originali. |
 | Trimming | Propone un intervallo Mott e permette di cambiare manualmente la prima e l'ultima base conservata. |
 | Reference | Accetta una singola sequenza FASTA, completa, che sia una rotazione esatta della rCRS inclusa. |
 | Allineamento | Cerca entrambe le orientazioni con allineamento semiglobale e gap affini su reference circolare. |
@@ -58,7 +58,7 @@ Per ogni base viene calcolato:
 score(i) = cutoff − 10^(−Q(i)/10)
 ```
 
-Si conserva il segmento contiguo con somma positiva massima. I cutoff disponibili sono **0,01**, **0,05** e **0,001**; il valore iniziale è **0,01**. Se nessun segmento ha somma positiva, il trimming automatico non propone una regione conservata.
+Si conserva il segmento contiguo con somma positiva massima. I cutoff disponibili sono **0,05**, **0,01** e **0,001**; il valore iniziale è **0,01**. Se nessun segmento ha somma positiva, il trimming automatico non propone una regione conservata.
 
 Questo criterio rimuove estremità sfavorevoli, ma può conservare singole basi di qualità bassa all'interno di un segmento complessivamente buono. Non equivale a richiedere `Q ≥ 20` per ogni base conservata. Le qualità originali restano consultabili anche dopo il trimming.
 

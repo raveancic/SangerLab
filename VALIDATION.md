@@ -53,3 +53,28 @@ un'indel in una ripetizione e una sequenza non omologa. Questa versione elabora
 singole letture: l'assemblaggio bidirezionale è una funzionalità futura.
 
 I dati individuali e i relativi report non fanno parte di questo repository.
+
+## Aggiornamento cumulativo 0.1.1
+
+La versione pubblica 0.1.1 integra tutte le revisioni locali dell'interfaccia
+(Neo-Brutalism, confronto reference/campione e aiuto Mott/Phred). Il motore di
+analisi e il parser non cambiano, salvo il numero di versione del report.
+
+- 31/31 test Node.js superati nuovamente (Node.js 22.16.0).
+- Chrome/Chromium headless: documento caricato direttamente nel browser tramite
+  Playwright; entrambi i dialoghi si aprono e si chiudono, il file reale
+  Example7.ab1 conserva 857 basi con p=0,01, orientamento forward, coordinate
+  16055–341 e 11 differenze candidate.
+- Secondo test browser con un AB1 sintetico costruito come reverse complement
+  del file reale, incluse qualità, coordinate dei picchi e canali invertiti e
+  complementati. Stessi risultati canonici; verificate etichette reference e
+  campione, coordinate AB1 decrescenti, selezione via click del picco C16069T,
+  navigazione e invalidazione dell'allineamento cambiando il cutoff a 0,05
+  (903 basi conservate). Nessuna eccezione JavaScript nel test reverse.
+- Ispezionato il raster del canvas reverse prodotto dal browser.
+
+Limiti: il browser dell'ambiente blocca la navigazione diretta a URL file://;
+le prove sono state effettuate inserendo il documento HTML in Chromium, non
+visitando il sito GitHub Pages. La compatibilità su tablet Android/iPad fisici
+resta da verificare. Il cromatogramma reale e la sua derivazione sintetica non
+sono distribuiti nell'aggiornamento.

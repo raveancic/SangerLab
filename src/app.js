@@ -97,14 +97,17 @@
     if(state.result){const s=state.result.summary;text('stat-map',`${number(s.rcrsStart)} → ${number(s.rcrsEnd)}`);text('stat-map-note',s.accepted?(s.wrapsRcrs?'attraversa 16.569 → 1':'nell’orientamento della reference'):'ipotesi non accettata: vedi avvisi');}
     else{text('stat-map','—');text('stat-map-note','disponibili dopo l’allineamento');}
   }
+  // The viewport stays in original AB1 indices; only the display axis is reversed.
+  const traceReversed = () => Boolean(state.result?.summary.accepted && state.result.orientation==='reverse');
   function syncTraceControls() {
     if(!state.read)return;
     const count=Number($('view-count').value);const max=Math.max(0,state.read.sequence.length-count);
     state.viewStart=Math.max(0,Math.min(max,state.viewStart));
-    $('trace-slider').max=max;$('trace-slider').value=state.viewStart;
+    const reverse=traceReversed();
+    $('trace-slider').max=max;$('trace-slider').value=reverse?max-state.viewStart:state.viewStart;
     const end=Math.min(state.viewStart+count,state.read.sequence.length);
-    text('trace-range',`Basi AB1 ${state.viewStart+1}–${end} di ${number(state.read.sequence.length)}`);
-    text('slider-position',`${state.viewStart+1} / ${state.read.sequence.length}`);
+    text('trace-range',`Basi AB1 ${reverse?end:state.viewStart+1}–${reverse?state.viewStart+1:end} di ${number(state.read.sequence.length)}`);
+    text('slider-position',`${reverse?end:state.viewStart+1} / ${state.read.sequence.length}`);
   }
   let plotGeometry=null;
   function drawTrace() {
@@ -116,41 +119,69 @@
     syncTraceControls();const read=state.read,lo=state.viewStart,hi=Math.min(read.sequence.length,lo+Number($('view-count').value));
     const peaks=read.peakPositions,pad=hi-lo>1?(peaks[hi-1]-peaks[lo])/(hi-lo-1)/2:5;
     const sampleLo=Math.max(0,peaks[lo]-pad),sampleHi=Math.min(read.sampleCount-1,peaks[hi-1]+pad);
-    const left=36,right=w-12,width=right-left,scale=width/Math.max(1,sampleHi-sampleLo),x=s=>left+(s-sampleLo)*scale;
+    const aligned=Boolean(state.result?.summary.accepted),reverse=traceReversed();
+    const left=76,right=w-12,width=Math.max(1,right-left),scale=width/Math.max(1,sampleHi-sampleLo),x=s=>reverse?right-(s-sampleLo)*scale:left+(s-sampleLo)*scale;
     let minimum=0,maximum=1;
     for(const b of ['A','C','G','T'])for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){const value=read.channels[b][i];if(value>maximum)maximum=value;if(value<minimum)minimum=value;}
     let trim={start:0,end:0};try{trim=region();}catch{}
     for(let i=lo;i<hi;i++) {
-      const a=x(i? (peaks[i-1]+peaks[i])/2:sampleLo),b=x(i+1<peaks.length?(peaks[i]+peaks[i+1])/2:sampleHi);
+      const x1=x(i? (peaks[i-1]+peaks[i])/2:sampleLo),x2=x(i+1<peaks.length?(peaks[i]+peaks[i+1])/2:sampleHi);
+      const a=Math.min(x1,x2),b=Math.max(x1,x2);
       if(i<trim.start||i>=trim.end){ctx.fillStyle='#e5e4eab8';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
+      if(aligned&&['X','I','?'].includes(state.mapping.get(i)?.op)){ctx.fillStyle='#eee3fa';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
       if(state.selected===i){ctx.fillStyle='#d8c5f396';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
     }
-    ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.textAlign='left';ctx.fillText('AB1',3,15);ctx.fillText('rCRS',3,29);
-    ctx.strokeStyle='#e3e0e8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,211);ctx.lineTo(right,211);ctx.moveTo(left,284);ctx.lineTo(right,284);ctx.stroke();
-    const y=value=>209-(value-minimum)/(maximum-minimum)*137;
-    ctx.save();ctx.beginPath();ctx.rect(left,65,width,149);ctx.clip();
-    for(const b of ['G','C','A','T']){ctx.strokeStyle=colors[b];ctx.lineWidth=1.25;ctx.beginPath();for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){if(i===Math.floor(sampleLo))ctx.moveTo(x(i),y(read.channels[b][i]));else ctx.lineTo(x(i),y(read.channels[b][i]));}ctx.stroke();}
+    ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.textAlign='left';ctx.fillText('AB1',3,15);
+    if(aligned){ctx.fillText('rCRS',3,29);ctx.fillText('Reference',3,45);}
+    ctx.fillText('Campione',3,61);
+    ctx.strokeStyle='#e3e0e8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,241);ctx.lineTo(right,241);ctx.moveTo(left,314);ctx.lineTo(right,314);ctx.stroke();
+    const y=value=>239-(value-minimum)/(maximum-minimum)*164;
+    ctx.save();ctx.beginPath();ctx.rect(left,69,width,175);ctx.clip();
+    for(const b of ['G','C','A','T']){
+      // Complement the dye channel and mirror its x-axis, not just the labels.
+      const channel=read.channels[reverse?Core.reverseComplement(b):b];
+      ctx.strokeStyle=colors[b];ctx.lineWidth=1.25;ctx.beginPath();
+      for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){if(i===Math.floor(sampleLo))ctx.moveTo(x(i),y(channel[i]));else ctx.lineTo(x(i),y(channel[i]));}ctx.stroke();
+    }
     ctx.restore();
     const qmax=Math.max(60,...(read.qualities||[]));
-    ctx.setLineDash([3,3]);ctx.strokeStyle='#b9b2c5';ctx.beginPath();ctx.moveTo(left,284-20/qmax*50);ctx.lineTo(right,284-20/qmax*50);ctx.stroke();ctx.setLineDash([]);
-    ctx.textAlign='left';ctx.font='8px system-ui';ctx.fillStyle='#656274';ctx.fillText('Q20',2,284-20/qmax*50+3);
+    ctx.setLineDash([3,3]);ctx.strokeStyle='#b9b2c5';ctx.beginPath();ctx.moveTo(left,314-20/qmax*50);ctx.lineTo(right,314-20/qmax*50);ctx.stroke();ctx.setLineDash([]);
+    ctx.textAlign='left';ctx.font='8px system-ui';ctx.fillStyle='#656274';ctx.fillText('Q20',2,314-20/qmax*50+3);
     for(let i=lo;i<hi;i++){
-      const px=x(peaks[i]),base=read.sequence[i],q=read.qualities?.[i],mapped=state.mapping.get(i);
+      const px=x(peaks[i]),base=reverse?Core.reverseComplement(read.sequence[i]):read.sequence[i],q=read.qualities?.[i],mapped=state.mapping.get(i);
       ctx.textAlign='center';ctx.font='8px system-ui';ctx.fillStyle='#656274';
-      if(i%5===0||(i===lo&&(5-i%5)%5>=3)){ctx.fillText(String(i+1),px,15);if(mapped)ctx.fillText(mapped.rcrsPos===null?'+':String(mapped.rcrsPos),px,29);}
-      ctx.font=hi-lo>80?'10px ui-monospace,monospace':'bold 12px ui-monospace,monospace';ctx.fillStyle=colors[base]||'#8b7b89';ctx.fillText(base,px,53);
-      if(mapped&&mapped.op!=='='&&mapped.op!=='?'){ctx.fillStyle='#c1922c';ctx.beginPath();ctx.arc(px,62,2.4,0,2*Math.PI);ctx.fill();}
-      if(q!==undefined&&q!==null){const bw=Math.max(2,Math.min(12,width/(hi-lo)*.65));ctx.fillStyle=q<20?'#d89767':'#8d70b8';ctx.fillRect(px-bw/2,284-q/qmax*50,bw,q/qmax*50);if(hi-lo<=50&&(width/(hi-lo)>12||i%5===0)){ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.fillText(String(q),px,231);}}
+      if(i%5===0||(i===lo&&(5-i%5)%5>=3)){ctx.fillText(String(i+1),px,15);if(aligned&&mapped)ctx.fillText(mapped.rcrsPos===null?'+':String(mapped.rcrsPos),px,29);}
+      ctx.font=hi-lo>80?'10px ui-monospace,monospace':'bold 12px ui-monospace,monospace';ctx.fillStyle=colors[base]||'#8b7b89';ctx.fillText(base,px,61);
+      if(aligned&&mapped){
+        ctx.fillStyle=colors[mapped.refBase]||'#6941a5';ctx.fillText(mapped.refBase,px,45);
+      }
+      if(q!==undefined&&q!==null){const bw=Math.max(2,Math.min(12,width/(hi-lo)*.65));ctx.fillStyle=q<20?'#d89767':'#8d70b8';ctx.fillRect(px-bw/2,314-q/qmax*50,bw,q/qmax*50);if(hi-lo<=50&&(width/(hi-lo)>12||i%5===0)){ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.fillText(String(q),px,261);}}
     }
-    plotGeometry={left,right,sampleLo,sampleHi,lo,hi,width};
+    // A deletion has no AB1 peak. Mark the boundary, not a neighboring base.
+    if(aligned){
+      const columns=state.result.columns;
+      for(let j=0;j<columns.length;j++){
+        if(columns[j].op!=='D')continue;
+        const start=j;while(j+1<columns.length&&columns[j+1].op==='D')j++;
+        const a=columns[start-1]?.readIndex0,b=columns[j+1]?.readIndex0;
+        if(a==null||b==null||a<lo||a>=hi||b<lo||b>=hi)continue;
+        const px=(x(peaks[a])+x(peaks[b]))/2;
+        ctx.strokeStyle='#6941a5';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,32);ctx.lineTo(px,68);ctx.stroke();
+        ctx.fillStyle='#6941a5';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('D'+(j-start+1),px,9);
+      }
+    }
+    text('trace-alignment-note',aligned?(reverse?'Cromatogramma e campione in reverse complement, nel verso rCRS. Le posizioni AB1 originali decrescono.':'Cromatogramma e campione nel verso rCRS (forward).')+' Viola = differenza o ambiguità; D = delezione tra picchi (dettagli nella tabella allineamento).':state.result?'Allineamento non accettato: confronto non mostrato nel cromatogramma.':'Reference e campione allineato disponibili dopo l’allineamento.');
+    plotGeometry={left,right,sampleLo,sampleHi,lo,hi,width,reverse};
   }
   function renderInspector() {
     const box=$('base-inspector');
     if(!state.read||state.selected===null){box.replaceChildren(element('span','Seleziona una base nel cromatogramma. Le barre inferiori rappresentano i Phred score originali; la linea tratteggiata indica Q20.','muted'));return;}
     const i=state.selected,read=state.read,q=read.qualities?.[i],c=state.mapping.get(i);
-    const fields=[['Base chiamata',read.sequence[i]],['Posizione AB1',String(i+1)],['Phred originale',q===undefined?'assente':'Q'+q],['P(errore) nominale',q===undefined?'—':(100*Math.pow(10,-q/10)).toLocaleString('it-IT',{maximumSignificantDigits:3})+'%'],['Posizione rCRS',c?(c.rcrsPos===null?'inserzione':String(c.rcrsPos)):'non allineata'],['Posizione FASTA',c?(c.fastaPos===null?'inserzione':String(c.fastaPos)):'—']];
-    box.replaceChildren();fields.forEach(([label,value],index)=>{const item=element('div',undefined,'inspect-item');item.append(element('small',label));const strong=element('strong',value,index===0?'base-large':'');if(index===0)strong.style.color=colors[read.sequence[i]]||'#8b7b89';item.append(strong);box.append(item);});
-    if(c&&state.result.orientation==='reverse')box.append(element('span','Nel confronto con la reference questa base è complementata: '+c.readBase+'.','small muted'));
+    const shown=traceReversed()?Core.reverseComplement(read.sequence[i]):read.sequence[i];
+    const fields=[['Base visualizzata',shown],['Posizione AB1',String(i+1)],['Phred originale',q===undefined?'assente':'Q'+q],['P(errore) nominale',q===undefined?'—':(100*Math.pow(10,-q/10)).toLocaleString('it-IT',{maximumSignificantDigits:3})+'%'],['Posizione rCRS',c?(c.rcrsPos===null?'inserzione':String(c.rcrsPos)):'non allineata'],['Posizione FASTA',c?(c.fastaPos===null?'inserzione':String(c.fastaPos)):'—']];
+    if(c&&state.result.summary.accepted)fields.push(['Base reference (rCRS)',c.refBase],['Campione nel verso rCRS',c.readBase]);
+    box.replaceChildren();fields.forEach(([label,value],index)=>{const item=element('div',undefined,'inspect-item');item.append(element('small',label));const strong=element('strong',value,index===0?'base-large':'');if(index===0)strong.style.color=colors[shown]||'#8b7b89';item.append(strong);box.append(item);});
+    if(traceReversed())box.append(element('span','Base nel file AB1 originale: '+read.sequence[i]+'. La traccia visualizzata è in reverse complement.','small muted'));
   }
   function jumpToRead(index) {
     if(!state.read)return;state.selected=Math.max(0,Math.min(state.read.sequence.length-1,index));
@@ -239,18 +270,24 @@
   $('ab1-file').addEventListener('change',event=>loadRead(event.target.files[0]));
   $('fasta-file').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{if(file.size>1000000)throw new Error('FASTA troppo grande per questa versione mtDNA.');setReference(Core.parseFasta(await file.text()));status('Reference verificata base per base. Prima posizione FASTA = rCRS '+state.origin+'. Ricalcola l’allineamento.');}catch(error){status(error.message,'error');}});
   $('restore-reference').addEventListener('click',()=>{setReference({name:bundled.name,sequence:bundled.sequence});status('Reference rCRS_15990 ripristinata.');});
+  for(const [triggerId,dialogId] of [['help-trim','trim-dialog'],['help-quality','quality-dialog']]){
+    const trigger=$(triggerId),dialog=$(dialogId);
+    trigger.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});
+    dialog.querySelector('.help-close').addEventListener('click',()=>dialog.close());
+    dialog.addEventListener('close',()=>trigger.focus());
+  }
   $('auto-trim').addEventListener('click',()=>trimAuto());$('cutoff').addEventListener('change',()=>trimAuto());
   for(const id of ['trim-start','trim-end'])$(id).addEventListener('input',()=>{invalidate();state.autoEmpty=false;state.trimMethod='manuale';updateTrimInfo();status('Intervallo modificato. Premi «Allinea alla rCRS» per aggiornare i risultati.');});
   $('orientation').addEventListener('change',()=>{invalidate();status('Orientamento modificato. Ricalcola l’allineamento.');});
   $('reset-trim').addEventListener('click',()=>{invalidate();state.autoEmpty=false;state.trimMethod='nessuno';$('trim-start').value=1;$('trim-end').value=state.read.sequence.length;updateTrimInfo();status('Tutte le basi sono conservate. Controlla le estremità prima di allineare.');});
   $('analyze').addEventListener('click',analyze);
   $('view-count').addEventListener('change',()=>{syncTraceControls();drawTrace();});
-  $('trace-slider').addEventListener('input',event=>{state.viewStart=Number(event.target.value);drawTrace();});
-  $('prev-trace').addEventListener('click',()=>{state.viewStart-=Math.ceil(Number($('view-count').value)*.7);drawTrace();});
-  $('next-trace').addEventListener('click',()=>{state.viewStart+=Math.ceil(Number($('view-count').value)*.7);drawTrace();});
+  $('trace-slider').addEventListener('input',event=>{const value=Number(event.target.value);state.viewStart=traceReversed()?Number(event.target.max)-value:value;drawTrace();});
+  $('prev-trace').addEventListener('click',()=>{state.viewStart+=(traceReversed()?1:-1)*Math.ceil(Number($('view-count').value)*.7);drawTrace();});
+  $('next-trace').addEventListener('click',()=>{state.viewStart+=(traceReversed()?-1:1)*Math.ceil(Number($('view-count').value)*.7);drawTrace();});
   const jump=()=>{const n=Number($('jump-base').value);if(Number.isInteger(n)&&n>=1&&n<=state.read.sequence.length)jumpToRead(n-1);};
   $('jump-button').addEventListener('click',jump);$('jump-base').addEventListener('keydown',e=>{if(e.key==='Enter')jump();});
-  $('trace-canvas').addEventListener('pointerdown',event=>{if(!plotGeometry)return;const rect=$('trace-canvas').getBoundingClientRect(),x=event.clientX-rect.left,g=plotGeometry;const sample=g.sampleLo+(x-g.left)/g.width*(g.sampleHi-g.sampleLo);let best=g.lo;for(let i=g.lo+1;i<g.hi;i++)if(Math.abs(state.read.peakPositions[i]-sample)<Math.abs(state.read.peakPositions[best]-sample))best=i;state.selected=best;$('jump-base').value=best+1;drawTrace();renderInspector();});
+  $('trace-canvas').addEventListener('pointerdown',event=>{if(!plotGeometry)return;const rect=$('trace-canvas').getBoundingClientRect(),x=event.clientX-rect.left,g=plotGeometry;const fraction=Math.max(0,Math.min(1,(x-g.left)/g.width));const sample=g.sampleLo+(g.reverse?1-fraction:fraction)*(g.sampleHi-g.sampleLo);let best=g.lo;for(let i=g.lo+1;i<g.hi;i++)if(Math.abs(state.read.peakPositions[i]-sample)<Math.abs(state.read.peakPositions[best]-sample))best=i;state.selected=best;$('jump-base').value=best+1;drawTrace();renderInspector();});
   for(const [tab,other,panel,otherPanel] of [['tab-variants','tab-alignment','variants-panel','alignment-panel'],['tab-alignment','tab-variants','alignment-panel','variants-panel']])$(tab).addEventListener('click',()=>{$(tab).className='tab active';$(tab).setAttribute('aria-selected','true');$(other).className='tab';$(other).setAttribute('aria-selected','false');$(panel).hidden=false;$(otherPanel).hidden=true;});
   $('align-prev').addEventListener('click',()=>{state.alignmentPage--;renderAlignment();});$('align-next').addEventListener('click',()=>{state.alignmentPage++;renderAlignment();});
   for(const kind of ['fasta','alignment','variants','quality','report'])$('export-'+kind).addEventListener('click',()=>exportResults(kind));
