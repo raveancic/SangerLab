@@ -167,7 +167,7 @@ main{padding-inline:clamp(26px,4vw,64px)}
       </svg>
       <span class="brand-name">SangerLab<small>GENETICA DELLA CONSERVAZIONE</small></span>
     </a>
-    <div class="header-tags"><button type="button" id="theme-toggle" class="button small-button" aria-label="Attiva tema scuro" aria-pressed="false">☾ Dark</button><span class="version">0.1.3</span><span class="local-badge"><span aria-hidden="true">●</span> Analisi locale</span></div>
+    <div class="header-tags"><button type="button" id="theme-toggle" class="button small-button" aria-label="Attiva tema scuro" aria-pressed="false">☾ Dark</button><span class="version">0.1.4</span><span class="local-badge"><span aria-hidden="true">●</span> Analisi locale</span></div>
   </div></header>
   <main id="main">
     <section class="hero">
@@ -199,7 +199,7 @@ main{padding-inline:clamp(26px,4vw,64px)}
     <section class="card trace-card" aria-labelledby="trace-title">
       <div class="section-head"><div><p class="eyebrow">02</p><div class="field-heading"><h2 id="trace-title">Cromatogramma e qualità</h2><button type="button" class="help-trigger" id="help-quality" aria-haspopup="dialog" aria-controls="quality-dialog" aria-label="Come si interpretano i punteggi Phred?">?</button></div></div><div class="legend"><span class="base-a">● A</span><span class="base-c">● C</span><span class="base-g">● G</span><span class="base-t">● T</span></div></div>
       <div class="trace-toolbar"><div class="nav-buttons"><button id="prev-trace" class="button square" aria-label="Tratto precedente" disabled>←</button><button id="next-trace" class="button square" aria-label="Tratto successivo" disabled>→</button></div><label class="inline-field">Basi in vista<select id="view-count"><option>30</option><option selected>50</option><option>80</option><option>120</option></select></label><label class="inline-field jump-field">Vai alla base AB1<input type="number" id="jump-base" value="1" min="1" inputmode="numeric" disabled><button id="jump-button" class="button" disabled>Vai</button></label><span id="trace-range" class="small muted">In attesa di un cromatogramma</span></div>
-      <p class="trace-reference-banner"><strong>Reference rCRS</strong> · Le basi di riferimento compaiono nella riga viola sopra le basi del campione dopo l’allineamento.</p><div class="canvas-wrap"><canvas id="trace-canvas" aria-label="Cromatogramma, basi della reference e del campione, barre di qualità. Tocca un picco per leggere i dettagli."></canvas><div id="trace-empty" class="empty-overlay"><div class="empty-symbol" aria-hidden="true">∿</div><h3>Nessun cromatogramma caricato.</h3><p>Carica un .ab1 e tocca una base per ispezionarla.</p></div></div>
+      <p class="trace-reference-banner"><strong>Reference rCRS</strong> · Le basi di riferimento compaiono nella riga viola sopra le basi del campione dopo l’allineamento. <strong>*</strong> = differenza candidata; <strong>?</strong> = base ambigua.</p><div class="canvas-wrap"><canvas id="trace-canvas" aria-label="Cromatogramma, basi della reference e del campione, barre di qualità. Tocca un picco per leggere i dettagli."></canvas><div id="trace-empty" class="empty-overlay"><div class="empty-symbol" aria-hidden="true">∿</div><h3>Nessun cromatogramma caricato.</h3><p>Carica un .ab1 e tocca una base per ispezionarla.</p></div></div>
       <label class="slider-label" for="trace-slider">Scorri lungo la lettura<span id="slider-position"></span></label><input id="trace-slider" type="range" min="0" max="1" value="0" disabled aria-label="Posizione della finestra del cromatogramma">
       <div id="base-inspector" class="inspector"><span class="muted">Seleziona una base nel cromatogramma. Le barre inferiori rappresentano i Phred score originali; la linea tratteggiata indica Q20.</span></div>
       <p id="trace-alignment-note" class="small muted" aria-live="polite">Reference e campione allineato disponibili dopo l’allineamento.</p><div class="trace-foot"><span>Traccia nel verso rCRS dopo un allineamento accettato; prima, nel verso originale AB1.</span><span>Zone grigie = escluse dal trimming · Q &lt; 20 = qualità bassa</span></div>
@@ -218,7 +218,7 @@ main{padding-inline:clamp(26px,4vw,64px)}
     </section>
 
     <section class="notes-grid"><details class="card notes" open><summary>Come leggere i risultati</summary><p>Una differenza è una candidata da controllare sul cromatogramma. Q20 corrisponde nominalmente a una probabilità di errore di chiamata dell'1%; Q30 allo 0,1%. Un Q elevato da solo non dimostra che una variante sia biologica.</p><p>Le inserzioni e le delezioni sono riportate con le basi di riferimento che le precedono e le seguono. Nelle ripetizioni, la posizione di un indel può non essere unica: la tabella non applica una nomenclatura mitocondriale standardizzata.</p></details><details class="card notes"><summary>Metodo, ambito e riproducibilità</summary><p>Allineamento semiglobale con gap affini: tutta la lettura conservata è allineata a un tratto della reference. Match +2, mismatch −3, apertura gap −6, estensione −1. La reference duplicata consente il passaggio attraverso l'origine; la numerazione viene poi riportata modulo 16.569.</p><p>Questa versione analizza una lettura alla volta. Non richiama i picchi, non misura l'eteroplasmia, non costruisce un consenso forward/reverse e non assegna aplogruppi. I Phred sono quelli già presenti nel file AB1.</p><p>Codice open source MIT. Parser adattato da <a href="https://github.com/animeshkundu/sanger-viewer" target="_blank" rel="noopener noreferrer">Sanger Viewer, Animesh</a>. Nessuna libreria esterna caricata, nessun account, nessun caricamento dei dati su server. Ricaricando la pagina si perde la sessione: esporta i risultati per conservarli.</p></details></section>
-    <footer><span>SangerLab · versione pilota 0.1.3 · 26 novembre 2026</span></footer>
+    <footer><span>SangerLab · versione pilota 0.1.4 · 26 novembre 2026</span></footer>
   </main>
   <dialog id="trim-dialog" class="help-dialog" aria-labelledby="trim-dialog-title">
     <div class="help-dialog-head"><h2 id="trim-dialog-title">Come funziona il trimming?</h2><button type="button" class="button square help-close" aria-label="Chiudi spiegazione del trimming" autofocus>×</button></div>
@@ -755,8 +755,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = api;
   const canonical = bundled.sequence.slice(N - bundled.origin + 1) + bundled.sequence.slice(0, N - bundled.origin + 1);
   const colors = {};
   const chartPalettes = {
-    light:{A:'#00843e',C:'#005ccc',G:'#151515',T:'#c31839',amb:'#654880',refLane:'#d9caff',sampleLane:'#ffffff',excluded:'#d4d4d4bb',diff:'#e6ddff',diffLane:'#bca5ff',selected:'#8b5cff35',label:'#393939',refLabel:'#2a165a',ink:'#111111',grid:'#b4b4b4',qLine:'#777777',unmapped:'#595959',qLow:'#c45300',qHigh:'#7042df',deletion:'#5c28c7'},
-    dark:{A:'#53f58b',C:'#6db9ff',G:'#f7f7f7',T:'#ff657d',amb:'#d9b5ff',refLane:'#39276c',sampleLane:'#35373b',excluded:'#55555ab8',diff:'#2a2145',diffLane:'#563b9a',selected:'#a684ff42',label:'#d6d6d9',refLabel:'#f5eaff',ink:'#ffffff',grid:'#56565e',qLine:'#a5a5ae',unmapped:'#b9b9bf',qLow:'#ff9a43',qHigh:'#a98aff',deletion:'#d2baff'}
+    light:{A:'#00843e',C:'#005ccc',G:'#151515',T:'#c31839',amb:'#654880',refLane:'#d9caff',sampleLane:'#ffffff',excluded:'#d4d4d4bb',diff:'#e6ddff',diffLane:'#bca5ff',selected:'#8b5cff35',label:'#393939',refLabel:'#2a165a',ink:'#111111',grid:'#b4b4b4',qLine:'#777777',unmapped:'#595959',qLow:'#c45300',qHigh:'#7042df',deletion:'#5c28c7',marker:'#b00056'},
+    dark:{A:'#53f58b',C:'#6db9ff',G:'#f7f7f7',T:'#ff657d',amb:'#d9b5ff',refLane:'#39276c',sampleLane:'#35373b',excluded:'#55555ab8',diff:'#2a2145',diffLane:'#563b9a',selected:'#a684ff42',label:'#d6d6d9',refLabel:'#f5eaff',ink:'#ffffff',grid:'#56565e',qLine:'#a5a5ae',unmapped:'#b9b9bf',qLow:'#ff9a43',qHigh:'#a98aff',deletion:'#d2baff',marker:'#ff70a5'}
   };
   let palette=chartPalettes.light;
   function readPreference(key){try{return localStorage.getItem(key);}catch{return null;}}
@@ -885,7 +885,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = api;
     for(const b of ['A','C','G','T'])for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){const value=read.channels[b][i];if(value>maximum)maximum=value;if(value<minimum)minimum=value;}
     // A fixed, contrasting reference lane makes the aligned bases unmistakable.
     ctx.fillStyle=palette.refLane;ctx.fillRect(0,33,w,19);
-    ctx.fillStyle=palette.sampleLane;ctx.fillRect(0,53,w,17);
+    ctx.fillStyle=palette.sampleLane;ctx.fillRect(0,53,w,39);
     let trim={start:0,end:0};try{trim=region();}catch{}
     for(let i=lo;i<hi;i++) {
       const x1=x(i? (peaks[i-1]+peaks[i])/2:sampleLo),x2=x(i+1<peaks.length?(peaks[i]+peaks[i+1])/2:sampleHi);
@@ -898,10 +898,11 @@ if (typeof module !== "undefined" && module.exports) module.exports = api;
     ctx.fillText('rCRS',3,29);
     ctx.font='bold 11px Arial';ctx.fillStyle=palette.refLabel;ctx.fillText('Reference',4,47);
     ctx.fillStyle=palette.ink;ctx.fillText('Campione',4,65);
+    if(aligned){ctx.font='bold 10px Arial';ctx.fillStyle=palette.marker;ctx.fillText('Differenze',4,85);}
     if(!aligned){ctx.font='11px Arial';ctx.fillStyle=palette.refLabel;ctx.fillText('Premi Allinea alla rCRS per visualizzare le basi di riferimento',left+5,47);}
     ctx.strokeStyle=palette.grid;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,241);ctx.lineTo(right,241);ctx.moveTo(left,314);ctx.lineTo(right,314);ctx.stroke();
-    const y=value=>239-(value-minimum)/(maximum-minimum)*164;
-    ctx.save();ctx.beginPath();ctx.rect(left,69,width,175);ctx.clip();
+    const y=value=>239-(value-minimum)/(maximum-minimum)*144;
+    ctx.save();ctx.beginPath();ctx.rect(left,92,width,152);ctx.clip();
     for(const b of ['G','C','A','T']){
       // Complement the dye channel and mirror its x-axis, not just the labels.
       const channel=read.channels[reverse?Core.reverseComplement(b):b];
@@ -920,6 +921,11 @@ if (typeof module !== "undefined" && module.exports) module.exports = api;
       if(aligned){
         ctx.fillStyle=mapped?(colors[mapped.refBase]||palette.refLabel):palette.unmapped;
         ctx.fillText(mapped?mapped.refBase:'·',px,47);
+        // Mark only mapped candidate differences; ambiguity is not a mutation.
+        if(mapped&&['X','I','?'].includes(mapped.op)){
+          ctx.fillStyle=palette.marker;ctx.font='bold 20px Arial';
+          ctx.fillText(mapped.op==='?'?'?':'*',px,88);
+        }
       }
       if(q!==undefined&&q!==null){const bw=Math.max(2,Math.min(12,width/(hi-lo)*.65));ctx.fillStyle=q<20?palette.qLow:palette.qHigh;ctx.fillRect(px-bw/2,314-q/qmax*50,bw,q/qmax*50);if(hi-lo<=50&&(width/(hi-lo)>12||i%5===0)){ctx.fillStyle=palette.label;ctx.font='8px system-ui';ctx.fillText(String(q),px,261);}}
     }
@@ -934,9 +940,10 @@ if (typeof module !== "undefined" && module.exports) module.exports = api;
         const px=(x(peaks[a])+x(peaks[b]))/2;
         ctx.strokeStyle=palette.deletion;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,32);ctx.lineTo(px,68);ctx.stroke();
         ctx.fillStyle=palette.deletion;ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('D'+(j-start+1),px,9);
+        ctx.fillStyle=palette.marker;ctx.font='bold 20px Arial';ctx.fillText('*',px,88);
       }
     }
-    text('trace-alignment-note',aligned?(reverse?'Cromatogramma e campione in reverse complement, nel verso rCRS. Le posizioni AB1 originali decrescono.':'Cromatogramma e campione nel verso rCRS (forward).')+' Riga Reference = basi rCRS allineate; · = base AB1 non allineata; − = gap nella reference. Viola = differenza o ambiguità; D = delezione tra picchi (dettagli nella tabella allineamento).':state.result?'Allineamento non accettato: confronto non mostrato nel cromatogramma.':'Reference e campione allineato disponibili dopo l’allineamento.');
+    text('trace-alignment-note',aligned?(reverse?'Cromatogramma e campione in reverse complement, nel verso rCRS. Le posizioni AB1 originali decrescono.':'Cromatogramma e campione nel verso rCRS (forward).')+' Riga Reference = basi rCRS allineate; · = base AB1 non allineata; − = gap nella reference. * = differenza candidata (sostituzione o indel); ? = base ambigua; D = delezione tra picchi (dettagli nella tabella allineamento).':state.result?'Allineamento non accettato: confronto non mostrato nel cromatogramma.':'Reference e campione allineato disponibili dopo l’allineamento.');
     plotGeometry={left,right,sampleLo,sampleHi,lo,hi,width,reverse};
   }
   function renderInspector() {

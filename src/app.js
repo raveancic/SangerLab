@@ -10,8 +10,8 @@
   const canonical = bundled.sequence.slice(N - bundled.origin + 1) + bundled.sequence.slice(0, N - bundled.origin + 1);
   const colors = {};
   const chartPalettes = {
-    light:{A:'#00843e',C:'#005ccc',G:'#151515',T:'#c31839',amb:'#654880',refLane:'#d9caff',sampleLane:'#ffffff',excluded:'#d4d4d4bb',diff:'#e6ddff',diffLane:'#bca5ff',selected:'#8b5cff35',label:'#393939',refLabel:'#2a165a',ink:'#111111',grid:'#b4b4b4',qLine:'#777777',unmapped:'#595959',qLow:'#c45300',qHigh:'#7042df',deletion:'#5c28c7'},
-    dark:{A:'#53f58b',C:'#6db9ff',G:'#f7f7f7',T:'#ff657d',amb:'#d9b5ff',refLane:'#39276c',sampleLane:'#35373b',excluded:'#55555ab8',diff:'#2a2145',diffLane:'#563b9a',selected:'#a684ff42',label:'#d6d6d9',refLabel:'#f5eaff',ink:'#ffffff',grid:'#56565e',qLine:'#a5a5ae',unmapped:'#b9b9bf',qLow:'#ff9a43',qHigh:'#a98aff',deletion:'#d2baff'}
+    light:{A:'#00843e',C:'#005ccc',G:'#151515',T:'#c31839',amb:'#654880',refLane:'#d9caff',sampleLane:'#ffffff',excluded:'#d4d4d4bb',diff:'#e6ddff',diffLane:'#bca5ff',selected:'#8b5cff35',label:'#393939',refLabel:'#2a165a',ink:'#111111',grid:'#b4b4b4',qLine:'#777777',unmapped:'#595959',qLow:'#c45300',qHigh:'#7042df',deletion:'#5c28c7',marker:'#b00056'},
+    dark:{A:'#53f58b',C:'#6db9ff',G:'#f7f7f7',T:'#ff657d',amb:'#d9b5ff',refLane:'#39276c',sampleLane:'#35373b',excluded:'#55555ab8',diff:'#2a2145',diffLane:'#563b9a',selected:'#a684ff42',label:'#d6d6d9',refLabel:'#f5eaff',ink:'#ffffff',grid:'#56565e',qLine:'#a5a5ae',unmapped:'#b9b9bf',qLow:'#ff9a43',qHigh:'#a98aff',deletion:'#d2baff',marker:'#ff70a5'}
   };
   let palette=chartPalettes.light;
   function readPreference(key){try{return localStorage.getItem(key);}catch{return null;}}
@@ -140,7 +140,7 @@
     for(const b of ['A','C','G','T'])for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){const value=read.channels[b][i];if(value>maximum)maximum=value;if(value<minimum)minimum=value;}
     // A fixed, contrasting reference lane makes the aligned bases unmistakable.
     ctx.fillStyle=palette.refLane;ctx.fillRect(0,33,w,19);
-    ctx.fillStyle=palette.sampleLane;ctx.fillRect(0,53,w,17);
+    ctx.fillStyle=palette.sampleLane;ctx.fillRect(0,53,w,39);
     let trim={start:0,end:0};try{trim=region();}catch{}
     for(let i=lo;i<hi;i++) {
       const x1=x(i? (peaks[i-1]+peaks[i])/2:sampleLo),x2=x(i+1<peaks.length?(peaks[i]+peaks[i+1])/2:sampleHi);
@@ -153,10 +153,11 @@
     ctx.fillText('rCRS',3,29);
     ctx.font='bold 11px Arial';ctx.fillStyle=palette.refLabel;ctx.fillText('Reference',4,47);
     ctx.fillStyle=palette.ink;ctx.fillText('Campione',4,65);
+    if(aligned){ctx.font='bold 10px Arial';ctx.fillStyle=palette.marker;ctx.fillText('Differenze',4,85);}
     if(!aligned){ctx.font='11px Arial';ctx.fillStyle=palette.refLabel;ctx.fillText('Premi Allinea alla rCRS per visualizzare le basi di riferimento',left+5,47);}
     ctx.strokeStyle=palette.grid;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,241);ctx.lineTo(right,241);ctx.moveTo(left,314);ctx.lineTo(right,314);ctx.stroke();
-    const y=value=>239-(value-minimum)/(maximum-minimum)*164;
-    ctx.save();ctx.beginPath();ctx.rect(left,69,width,175);ctx.clip();
+    const y=value=>239-(value-minimum)/(maximum-minimum)*144;
+    ctx.save();ctx.beginPath();ctx.rect(left,92,width,152);ctx.clip();
     for(const b of ['G','C','A','T']){
       // Complement the dye channel and mirror its x-axis, not just the labels.
       const channel=read.channels[reverse?Core.reverseComplement(b):b];
@@ -175,6 +176,11 @@
       if(aligned){
         ctx.fillStyle=mapped?(colors[mapped.refBase]||palette.refLabel):palette.unmapped;
         ctx.fillText(mapped?mapped.refBase:'·',px,47);
+        // Mark only mapped candidate differences; ambiguity is not a mutation.
+        if(mapped&&['X','I','?'].includes(mapped.op)){
+          ctx.fillStyle=palette.marker;ctx.font='bold 20px Arial';
+          ctx.fillText(mapped.op==='?'?'?':'*',px,88);
+        }
       }
       if(q!==undefined&&q!==null){const bw=Math.max(2,Math.min(12,width/(hi-lo)*.65));ctx.fillStyle=q<20?palette.qLow:palette.qHigh;ctx.fillRect(px-bw/2,314-q/qmax*50,bw,q/qmax*50);if(hi-lo<=50&&(width/(hi-lo)>12||i%5===0)){ctx.fillStyle=palette.label;ctx.font='8px system-ui';ctx.fillText(String(q),px,261);}}
     }
@@ -189,9 +195,10 @@
         const px=(x(peaks[a])+x(peaks[b]))/2;
         ctx.strokeStyle=palette.deletion;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,32);ctx.lineTo(px,68);ctx.stroke();
         ctx.fillStyle=palette.deletion;ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('D'+(j-start+1),px,9);
+        ctx.fillStyle=palette.marker;ctx.font='bold 20px Arial';ctx.fillText('*',px,88);
       }
     }
-    text('trace-alignment-note',aligned?(reverse?'Cromatogramma e campione in reverse complement, nel verso rCRS. Le posizioni AB1 originali decrescono.':'Cromatogramma e campione nel verso rCRS (forward).')+' Riga Reference = basi rCRS allineate; · = base AB1 non allineata; − = gap nella reference. Viola = differenza o ambiguità; D = delezione tra picchi (dettagli nella tabella allineamento).':state.result?'Allineamento non accettato: confronto non mostrato nel cromatogramma.':'Reference e campione allineato disponibili dopo l’allineamento.');
+    text('trace-alignment-note',aligned?(reverse?'Cromatogramma e campione in reverse complement, nel verso rCRS. Le posizioni AB1 originali decrescono.':'Cromatogramma e campione nel verso rCRS (forward).')+' Riga Reference = basi rCRS allineate; · = base AB1 non allineata; − = gap nella reference. * = differenza candidata (sostituzione o indel); ? = base ambigua; D = delezione tra picchi (dettagli nella tabella allineamento).':state.result?'Allineamento non accettato: confronto non mostrato nel cromatogramma.':'Reference e campione allineato disponibili dopo l’allineamento.');
     plotGeometry={left,right,sampleLo,sampleHi,lo,hi,width,reverse};
   }
   function renderInspector() {

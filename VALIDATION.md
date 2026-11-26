@@ -107,3 +107,10 @@ rispetto all'anteprima approvata. Controllo sintattico Node e 31/31 test
 unitari superati. Il collaudo finale sul sito pubblicato e sul tablet
 fisico resta da effettuare; nessun nuovo collaudo grafico in questa fase
 che riguarda soltanto la preparazione del pacchetto.
+
+## v0.1.4 — Marcatori delle differenze
+
+- `node --test tests/*.test.cjs`: 31/31 superati; core e parser invariati.
+- Chromium, HTML caricato in memoria: Example7.ab1 produce 11 differenze candidate; verificato un asterisco dopo «Vedi picco» sulla prima differenza, mantenimento del simbolo al cambio tema, assenza nella regione non allineata e cancellazione dopo reset del trimming.
+- Controllo visivo dello screenshot in Dark mode: asterisco sotto la base campione corrispondente, senza sovrapposizione alla traccia.
+- Non ripetuti in questa revisione i test grafici con letture reverse e delezioni reali, né il collaudo su tablet fisico. L'apertura diretta file:// è bloccata nell'ambiente di verifica; il test Chromium ha usato l'HTML in memoria.

@@ -1,4 +1,4 @@
-# SangerLab v0.1.3 — D-loop e coordinate rCRS
+# SangerLab v0.1.4 — D-loop e coordinate rCRS
 
 Piccolo strumento didattico per analizzare **una lettura Sanger mitocondriale alla volta**: cromatogramma AB1, qualità Phred, trimming e allineamento a una reference circolare, con numerazione rCRS originale.
 
@@ -168,3 +168,7 @@ Biopython è una dipendenza facoltativa dei test indipendenti; non viene scarica
 ## Interfaccia v0.1.3
 
 Palette satura, modalità Light/Dark (grigio antracite), logo vettoriale fisso con tracce Sanger e giallo #FFD400, quattro forme geometriche fisse dietro i pannelli. La preferenza del tema è memorizzata localmente se il browser consente localStorage; i file e i risultati restano in memoria. Gli algoritmi e le coordinate non cambiano.
+
+## v0.1.4 — Marcatori nel cromatogramma
+
+Dopo un allineamento accettato, la riga Differenze mostra un asterisco fucsia per ogni sostituzione o inserzione candidata e al confine delle delezioni; `?` distingue le basi ambigue. I simboli seguono i picchi durante lo scorrimento in entrambi gli orientamenti. Nessun cambiamento agli algoritmi.
