@@ -276,7 +276,7 @@
   const cell=value=>String(value??'').replace(/[\t\r\n]/g,' ');
   const tsv=rows=>rows.map(row=>row.map(cell).join('\t')).join('\n')+'\n';
   function report() {
-    return {tool:'SangerLab',version:Core.VERSION,generatedAt:new Date().toISOString(),input:{fileName:state.read.fileName,sha256:state.readHash,baseCount:state.read.sequence.length,tags:state.read.tags},reference:{name:state.reference.name,accession:'NC_012920.1',sequenceSha256:state.referenceHash,length:N,originRcrs1:state.origin,exactRotationVerified:true},coordinateConvention:'All public positions 1-based; trim.start zero-based inclusive, trim.end zero-based exclusive. Insertions between leftAnchor/rightAnchor; not mitochondrial-normalized.',trim:state.analysisTrim,analysis:state.result,elapsedMs:state.elapsed,scope:'Single original basecaller read; no consensus, no heteroplasmy estimate, no haplogroup assignment.'};
+    return {tool:'SangerLab',version:'0.1.5',generatedAt:new Date().toISOString(),input:{fileName:state.read.fileName,sha256:state.readHash,baseCount:state.read.sequence.length,tags:state.read.tags},reference:{name:state.reference.name,accession:'NC_012920.1',sequenceSha256:state.referenceHash,length:N,originRcrs1:state.origin,exactRotationVerified:true},coordinateConvention:'All public positions 1-based; trim.start zero-based inclusive, trim.end zero-based exclusive. Insertions between leftAnchor/rightAnchor; not mitochondrial-normalized.',trim:state.analysisTrim,analysis:state.result,elapsedMs:state.elapsed,scope:'Single original basecaller read; no consensus, no heteroplasmy estimate, no haplogroup assignment.'};
   }
   function exportResults(kind) {
     if(!state.result)return;const name=cleanName(state.read.fileName),r=state.result,s=r.summary,trim=state.analysisTrim;
@@ -315,7 +315,74 @@
   $('next-trace').addEventListener('click',()=>{state.viewStart+=(traceReversed()?-1:1)*Math.ceil(Number($('view-count').value)*.7);drawTrace();});
   const jump=()=>{const n=Number($('jump-base').value);if(Number.isInteger(n)&&n>=1&&n<=state.read.sequence.length)jumpToRead(n-1);};
   $('jump-button').addEventListener('click',jump);$('jump-base').addEventListener('keydown',e=>{if(e.key==='Enter')jump();});
-  $('trace-canvas').addEventListener('pointerdown',event=>{if(!plotGeometry)return;const rect=$('trace-canvas').getBoundingClientRect(),x=event.clientX-rect.left,g=plotGeometry;const fraction=Math.max(0,Math.min(1,(x-g.left)/g.width));const sample=g.sampleLo+(g.reverse?1-fraction:fraction)*(g.sampleHi-g.sampleLo);let best=g.lo;for(let i=g.lo+1;i<g.hi;i++)if(Math.abs(state.read.peakPositions[i]-sample)<Math.abs(state.read.peakPositions[best]-sample))best=i;state.selected=best;$('jump-base').value=best+1;drawTrace();renderInspector();});
+  // Pan directly on the trace in DISPLAY coordinates (rCRS direction after alignment).
+  // The original AB1 indices and all analysis results remain unchanged.
+  const traceCanvas=$('trace-canvas');
+  let traceGesture=null, wheelRemainder=0, lastWheelTime=-Infinity;
+  const canPanTrace=()=>Boolean(state.read&&!state.busy&&plotGeometry);
+  function panTraceTo(start) {
+    if(!canPanTrace())return;
+    const max=Math.max(0,state.read.sequence.length-Number($('view-count').value));
+    const next=Math.max(0,Math.min(max,Math.round(start)));
+    if(next!==state.viewStart){state.viewStart=next;drawTrace();}
+  }
+  function inspectTraceAt(clientX) {
+    if(!canPanTrace())return;
+    const rect=traceCanvas.getBoundingClientRect(),g=plotGeometry,x=clientX-rect.left;
+    if(x<g.left||x>g.right)return;
+    const fraction=Math.max(0,Math.min(1,(x-g.left)/g.width));
+    const sample=g.sampleLo+(g.reverse?1-fraction:fraction)*(g.sampleHi-g.sampleLo);
+    let best=g.lo;
+    for(let i=g.lo+1;i<g.hi;i++)if(Math.abs(state.read.peakPositions[i]-sample)<Math.abs(state.read.peakPositions[best]-sample))best=i;
+    state.selected=best;$('jump-base').value=best+1;drawTrace();renderInspector();
+  }
+  traceCanvas.addEventListener('wheel',event=>{
+    // A horizontal two-finger scroll (or Shift+wheel) pans the trace.
+    // Ordinary vertical scrolling and browser pinch/zoom remain available.
+    if(!canPanTrace()||event.ctrlKey||traceGesture)return;
+    let delta=event.deltaX;
+    if(event.shiftKey&&Math.abs(delta)<Math.abs(event.deltaY))delta=event.deltaY;
+    else if(Math.abs(delta)<=Math.abs(event.deltaY))return;
+    if(!delta)return;
+    event.preventDefault();
+    const g=plotGeometry,unit=event.deltaMode===1?16:event.deltaMode===2?g.width:1;
+    if(event.timeStamp-lastWheelTime>200)wheelRemainder=0;
+    lastWheelTime=event.timeStamp;
+    wheelRemainder+=delta*unit*(g.hi-g.lo)/g.width;
+    const steps=Math.trunc(wheelRemainder);wheelRemainder-=steps;
+    if(steps)panTraceTo(state.viewStart+(traceReversed()?-1:1)*steps);
+  },{passive:false});
+  function clearTraceGesture(){traceGesture=null;traceCanvas.classList.remove('is-panning');}
+  traceCanvas.addEventListener('pointerdown',event=>{
+    if(!event.isPrimary){clearTraceGesture();return;}
+    if(!canPanTrace()||event.button!==0)return;
+    const g=plotGeometry;
+    traceGesture={id:event.pointerId,x:event.clientX,y:event.clientY,start:state.viewStart,
+      basesPerPixel:(g.hi-g.lo)/g.width,direction:g.reverse?-1:1,axis:null,read:state.read};
+    wheelRemainder=0;
+    traceCanvas.setPointerCapture(event.pointerId);
+  });
+  traceCanvas.addEventListener('pointermove',event=>{
+    const g=traceGesture;if(!g||event.pointerId!==g.id)return;
+    if(!canPanTrace()||state.read!==g.read){clearTraceGesture();return;}
+    const dx=event.clientX-g.x,dy=event.clientY-g.y;
+    if(!g.axis&&Math.max(Math.abs(dx),Math.abs(dy))>=6){
+      g.axis=Math.abs(dx)>=Math.abs(dy)?'x':'y';
+      if(g.axis==='x')traceCanvas.classList.add('is-panning');
+    }
+    if(g.axis==='x')panTraceTo(g.start-g.direction*dx*g.basesPerPixel);
+  });
+  traceCanvas.addEventListener('pointerup',event=>{
+    const g=traceGesture;if(!g||event.pointerId!==g.id)return;
+    clearTraceGesture();
+    if(!canPanTrace()||state.read!==g.read)return;
+    const dx=event.clientX-g.x,dy=event.clientY-g.y;
+    if(!g.axis&&Math.max(Math.abs(dx),Math.abs(dy))<6)inspectTraceAt(event.clientX);
+    else if(g.axis==='x')panTraceTo(g.start-g.direction*dx*g.basesPerPixel);
+  });
+  for(const type of ['pointercancel','lostpointercapture'])traceCanvas.addEventListener(type,event=>{
+    if(traceGesture?.id===event.pointerId)clearTraceGesture();
+  });
   for(const [tab,other,panel,otherPanel] of [['tab-variants','tab-alignment','variants-panel','alignment-panel'],['tab-alignment','tab-variants','alignment-panel','variants-panel']])$(tab).addEventListener('click',()=>{$(tab).className='tab active';$(tab).setAttribute('aria-selected','true');$(other).className='tab';$(other).setAttribute('aria-selected','false');$(panel).hidden=false;$(otherPanel).hidden=true;});
   $('align-prev').addEventListener('click',()=>{state.alignmentPage--;renderAlignment();});$('align-next').addEventListener('click',()=>{state.alignmentPage++;renderAlignment();});
   for(const kind of ['fasta','alignment','variants','quality','report'])$('export-'+kind).addEventListener('click',()=>exportResults(kind));

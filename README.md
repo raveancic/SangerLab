@@ -1,4 +1,4 @@
-# SangerLab v0.1.4 — D-loop e coordinate rCRS
+# SangerLab v0.1.5 — D-loop e coordinate rCRS
 
 Piccolo strumento didattico per analizzare **una lettura Sanger mitocondriale alla volta**: cromatogramma AB1, qualità Phred, trimming e allineamento a una reference circolare, con numerazione rCRS originale.
 
@@ -172,3 +172,7 @@ Palette satura, modalità Light/Dark (grigio antracite), logo vettoriale fisso c
 ## v0.1.4 — Marcatori nel cromatogramma
 
 Dopo un allineamento accettato, la riga Differenze mostra un asterisco fucsia per ogni sostituzione o inserzione candidata e al confine delle delezioni; `?` distingue le basi ambigue. I simboli seguono i picchi durante lo scorrimento in entrambi gli orientamenti. Nessun cambiamento agli algoritmi.
+
+## v0.1.5 — Navigazione diretta sul cromatogramma
+
+Scorrimento orizzontale con trackpad (o Shift + rotella), trascinamento con il mouse e swipe orizzontale su touchscreen. Clic/tocco breve seleziona una base; lo swipe verticale continua a scorrere la pagina. La barra sottostante resta sincronizzata. Il movimento segue l'orientamento visualizzato, incluso il reverse complement. Il motore scientifico non cambia.

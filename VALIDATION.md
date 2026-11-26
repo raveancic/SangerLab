@@ -114,3 +114,10 @@ che riguarda soltanto la preparazione del pacchetto.
 - Chromium, HTML caricato in memoria: Example7.ab1 produce 11 differenze candidate; verificato un asterisco dopo «Vedi picco» sulla prima differenza, mantenimento del simbolo al cambio tema, assenza nella regione non allineata e cancellazione dopo reset del trimming.
 - Controllo visivo dello screenshot in Dark mode: asterisco sotto la base campione corrispondente, senza sovrapposizione alla traccia.
 - Non ripetuti in questa revisione i test grafici con letture reverse e delezioni reali, né il collaudo su tablet fisico. L'apertura diretta file:// è bloccata nell'ambiente di verifica; il test Chromium ha usato l'HTML in memoria.
+
+## v0.1.5 — Navigazione diretta sul cromatogramma
+
+- Derivata dalla v0.1.4; `src/core.js` e `src/abif.js` identici byte per byte. Versione applicativa aggiornata nel report JSON, versione del motore invariata.
+- `node --check src/app.js` e `node --test tests/*.test.cjs`: 31/31 superati.
+- Chromium con HTML caricato in memoria e Example7.ab1: allineamento accettato, 11 differenze candidate; verificati eventi wheel orizzontali in entrambi i versi, trascinamento mouse, clic di ispezione, wheel verticale senza spostamento della sequenza, swipe orizzontale touch simulato e tap di ispezione. Il risultato dell'allineamento e' identico prima e dopo le interazioni.
+- Trackpad fisico, tablet fisico e navigazione diretta con una lettura reverse reale non ancora collaudati. Il calcolo dello spostamento usa il verso della traccia visualizzata. Il comportamento nativo della barra inferiore resta invariato rispetto alla v0.1.4.

@@ -129,6 +129,11 @@ main{padding-inline:clamp(26px,4vw,64px)}
   .art-4{--size:210px;bottom:-3%;right:-86px}
 }
 
+
+/* Direct trace navigation. Vertical touch gestures still scroll the page. */
+#trace-canvas{touch-action:pan-y pinch-zoom;cursor:grab}
+#trace-canvas.is-panning{cursor:grabbing}
+.trace-gesture-hint{margin:7px 0 0;font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -167,7 +172,7 @@ main{padding-inline:clamp(26px,4vw,64px)}
       </svg>
       <span class="brand-name">SangerLab<small>GENETICA DELLA CONSERVAZIONE</small></span>
     </a>
-    <div class="header-tags"><button type="button" id="theme-toggle" class="button small-button" aria-label="Attiva tema scuro" aria-pressed="false">☾ Dark</button><span class="version">0.1.4</span><span class="local-badge"><span aria-hidden="true">●</span> Analisi locale</span></div>
+    <div class="header-tags"><button type="button" id="theme-toggle" class="button small-button" aria-label="Attiva tema scuro" aria-pressed="false">☾ Dark</button><span class="version">0.1.5</span><span class="local-badge"><span aria-hidden="true">●</span> Analisi locale</span></div>
   </div></header>
   <main id="main">
     <section class="hero">
@@ -200,6 +205,7 @@ main{padding-inline:clamp(26px,4vw,64px)}
       <div class="section-head"><div><p class="eyebrow">02</p><div class="field-heading"><h2 id="trace-title">Cromatogramma e qualità</h2><button type="button" class="help-trigger" id="help-quality" aria-haspopup="dialog" aria-controls="quality-dialog" aria-label="Come si interpretano i punteggi Phred?">?</button></div></div><div class="legend"><span class="base-a">● A</span><span class="base-c">● C</span><span class="base-g">● G</span><span class="base-t">● T</span></div></div>
       <div class="trace-toolbar"><div class="nav-buttons"><button id="prev-trace" class="button square" aria-label="Tratto precedente" disabled>←</button><button id="next-trace" class="button square" aria-label="Tratto successivo" disabled>→</button></div><label class="inline-field">Basi in vista<select id="view-count"><option>30</option><option selected>50</option><option>80</option><option>120</option></select></label><label class="inline-field jump-field">Vai alla base AB1<input type="number" id="jump-base" value="1" min="1" inputmode="numeric" disabled><button id="jump-button" class="button" disabled>Vai</button></label><span id="trace-range" class="small muted">In attesa di un cromatogramma</span></div>
       <p class="trace-reference-banner"><strong>Reference rCRS</strong> · Le basi di riferimento compaiono nella riga viola sopra le basi del campione dopo l’allineamento. <strong>*</strong> = differenza candidata; <strong>?</strong> = base ambigua.</p><div class="canvas-wrap"><canvas id="trace-canvas" aria-label="Cromatogramma, basi della reference e del campione, barre di qualità. Tocca un picco per leggere i dettagli."></canvas><div id="trace-empty" class="empty-overlay"><div class="empty-symbol" aria-hidden="true">∿</div><h3>Nessun cromatogramma caricato.</h3><p>Carica un .ab1 e tocca una base per ispezionarla.</p></div></div>
+      <p class="trace-gesture-hint">Scorri direttamente sul cromatogramma: due dita sul trackpad, trascinamento con il mouse o swipe orizzontale. Clicca o tocca una base per ispezionarla.</p>
       <label class="slider-label" for="trace-slider">Scorri lungo la lettura<span id="slider-position"></span></label><input id="trace-slider" type="range" min="0" max="1" value="0" disabled aria-label="Posizione della finestra del cromatogramma">
       <div id="base-inspector" class="inspector"><span class="muted">Seleziona una base nel cromatogramma. Le barre inferiori rappresentano i Phred score originali; la linea tratteggiata indica Q20.</span></div>
       <p id="trace-alignment-note" class="small muted" aria-live="polite">Reference e campione allineato disponibili dopo l’allineamento.</p><div class="trace-foot"><span>Traccia nel verso rCRS dopo un allineamento accettato; prima, nel verso originale AB1.</span><span>Zone grigie = escluse dal trimming · Q &lt; 20 = qualità bassa</span></div>
@@ -218,7 +224,7 @@ main{padding-inline:clamp(26px,4vw,64px)}
     </section>
 
     <section class="notes-grid"><details class="card notes" open><summary>Come leggere i risultati</summary><p>Una differenza è una candidata da controllare sul cromatogramma. Q20 corrisponde nominalmente a una probabilità di errore di chiamata dell'1%; Q30 allo 0,1%. Un Q elevato da solo non dimostra che una variante sia biologica.</p><p>Le inserzioni e le delezioni sono riportate con le basi di riferimento che le precedono e le seguono. Nelle ripetizioni, la posizione di un indel può non essere unica: la tabella non applica una nomenclatura mitocondriale standardizzata.</p></details><details class="card notes"><summary>Metodo, ambito e riproducibilità</summary><p>Allineamento semiglobale con gap affini: tutta la lettura conservata è allineata a un tratto della reference. Match +2, mismatch −3, apertura gap −6, estensione −1. La reference duplicata consente il passaggio attraverso l'origine; la numerazione viene poi riportata modulo 16.569.</p><p>Questa versione analizza una lettura alla volta. Non richiama i picchi, non misura l'eteroplasmia, non costruisce un consenso forward/reverse e non assegna aplogruppi. I Phred sono quelli già presenti nel file AB1.</p><p>Codice open source MIT. Parser adattato da <a href="https://github.com/animeshkundu/sanger-viewer" target="_blank" rel="noopener noreferrer">Sanger Viewer, Animesh</a>. Nessuna libreria esterna caricata, nessun account, nessun caricamento dei dati su server. Ricaricando la pagina si perde la sessione: esporta i risultati per conservarli.</p></details></section>
-    <footer><span>SangerLab · versione pilota 0.1.4 · 26 novembre 2026</span></footer>
+    <footer><span>SangerLab · versione pilota 0.1.5 · 26 novembre 2026</span></footer>
   </main>
   <dialog id="trim-dialog" class="help-dialog" aria-labelledby="trim-dialog-title">
     <div class="help-dialog-head"><h2 id="trim-dialog-title">Come funziona il trimming?</h2><button type="button" class="button square help-close" aria-label="Chiudi spiegazione del trimming" autofocus>×</button></div>
@@ -1021,7 +1027,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = api;
   const cell=value=>String(value??'').replace(/[\t\r\n]/g,' ');
   const tsv=rows=>rows.map(row=>row.map(cell).join('\t')).join('\n')+'\n';
   function report() {
-    return {tool:'SangerLab',version:Core.VERSION,generatedAt:new Date().toISOString(),input:{fileName:state.read.fileName,sha256:state.readHash,baseCount:state.read.sequence.length,tags:state.read.tags},reference:{name:state.reference.name,accession:'NC_012920.1',sequenceSha256:state.referenceHash,length:N,originRcrs1:state.origin,exactRotationVerified:true},coordinateConvention:'All public positions 1-based; trim.start zero-based inclusive, trim.end zero-based exclusive. Insertions between leftAnchor/rightAnchor; not mitochondrial-normalized.',trim:state.analysisTrim,analysis:state.result,elapsedMs:state.elapsed,scope:'Single original basecaller read; no consensus, no heteroplasmy estimate, no haplogroup assignment.'};
+    return {tool:'SangerLab',version:'0.1.5',generatedAt:new Date().toISOString(),input:{fileName:state.read.fileName,sha256:state.readHash,baseCount:state.read.sequence.length,tags:state.read.tags},reference:{name:state.reference.name,accession:'NC_012920.1',sequenceSha256:state.referenceHash,length:N,originRcrs1:state.origin,exactRotationVerified:true},coordinateConvention:'All public positions 1-based; trim.start zero-based inclusive, trim.end zero-based exclusive. Insertions between leftAnchor/rightAnchor; not mitochondrial-normalized.',trim:state.analysisTrim,analysis:state.result,elapsedMs:state.elapsed,scope:'Single original basecaller read; no consensus, no heteroplasmy estimate, no haplogroup assignment.'};
   }
   function exportResults(kind) {
     if(!state.result)return;const name=cleanName(state.read.fileName),r=state.result,s=r.summary,trim=state.analysisTrim;
@@ -1060,7 +1066,74 @@ if (typeof module !== "undefined" && module.exports) module.exports = api;
   $('next-trace').addEventListener('click',()=>{state.viewStart+=(traceReversed()?-1:1)*Math.ceil(Number($('view-count').value)*.7);drawTrace();});
   const jump=()=>{const n=Number($('jump-base').value);if(Number.isInteger(n)&&n>=1&&n<=state.read.sequence.length)jumpToRead(n-1);};
   $('jump-button').addEventListener('click',jump);$('jump-base').addEventListener('keydown',e=>{if(e.key==='Enter')jump();});
-  $('trace-canvas').addEventListener('pointerdown',event=>{if(!plotGeometry)return;const rect=$('trace-canvas').getBoundingClientRect(),x=event.clientX-rect.left,g=plotGeometry;const fraction=Math.max(0,Math.min(1,(x-g.left)/g.width));const sample=g.sampleLo+(g.reverse?1-fraction:fraction)*(g.sampleHi-g.sampleLo);let best=g.lo;for(let i=g.lo+1;i<g.hi;i++)if(Math.abs(state.read.peakPositions[i]-sample)<Math.abs(state.read.peakPositions[best]-sample))best=i;state.selected=best;$('jump-base').value=best+1;drawTrace();renderInspector();});
+  // Pan directly on the trace in DISPLAY coordinates (rCRS direction after alignment).
+  // The original AB1 indices and all analysis results remain unchanged.
+  const traceCanvas=$('trace-canvas');
+  let traceGesture=null, wheelRemainder=0, lastWheelTime=-Infinity;
+  const canPanTrace=()=>Boolean(state.read&&!state.busy&&plotGeometry);
+  function panTraceTo(start) {
+    if(!canPanTrace())return;
+    const max=Math.max(0,state.read.sequence.length-Number($('view-count').value));
+    const next=Math.max(0,Math.min(max,Math.round(start)));
+    if(next!==state.viewStart){state.viewStart=next;drawTrace();}
+  }
+  function inspectTraceAt(clientX) {
+    if(!canPanTrace())return;
+    const rect=traceCanvas.getBoundingClientRect(),g=plotGeometry,x=clientX-rect.left;
+    if(x<g.left||x>g.right)return;
+    const fraction=Math.max(0,Math.min(1,(x-g.left)/g.width));
+    const sample=g.sampleLo+(g.reverse?1-fraction:fraction)*(g.sampleHi-g.sampleLo);
+    let best=g.lo;
+    for(let i=g.lo+1;i<g.hi;i++)if(Math.abs(state.read.peakPositions[i]-sample)<Math.abs(state.read.peakPositions[best]-sample))best=i;
+    state.selected=best;$('jump-base').value=best+1;drawTrace();renderInspector();
+  }
+  traceCanvas.addEventListener('wheel',event=>{
+    // A horizontal two-finger scroll (or Shift+wheel) pans the trace.
+    // Ordinary vertical scrolling and browser pinch/zoom remain available.
+    if(!canPanTrace()||event.ctrlKey||traceGesture)return;
+    let delta=event.deltaX;
+    if(event.shiftKey&&Math.abs(delta)<Math.abs(event.deltaY))delta=event.deltaY;
+    else if(Math.abs(delta)<=Math.abs(event.deltaY))return;
+    if(!delta)return;
+    event.preventDefault();
+    const g=plotGeometry,unit=event.deltaMode===1?16:event.deltaMode===2?g.width:1;
+    if(event.timeStamp-lastWheelTime>200)wheelRemainder=0;
+    lastWheelTime=event.timeStamp;
+    wheelRemainder+=delta*unit*(g.hi-g.lo)/g.width;
+    const steps=Math.trunc(wheelRemainder);wheelRemainder-=steps;
+    if(steps)panTraceTo(state.viewStart+(traceReversed()?-1:1)*steps);
+  },{passive:false});
+  function clearTraceGesture(){traceGesture=null;traceCanvas.classList.remove('is-panning');}
+  traceCanvas.addEventListener('pointerdown',event=>{
+    if(!event.isPrimary){clearTraceGesture();return;}
+    if(!canPanTrace()||event.button!==0)return;
+    const g=plotGeometry;
+    traceGesture={id:event.pointerId,x:event.clientX,y:event.clientY,start:state.viewStart,
+      basesPerPixel:(g.hi-g.lo)/g.width,direction:g.reverse?-1:1,axis:null,read:state.read};
+    wheelRemainder=0;
+    traceCanvas.setPointerCapture(event.pointerId);
+  });
+  traceCanvas.addEventListener('pointermove',event=>{
+    const g=traceGesture;if(!g||event.pointerId!==g.id)return;
+    if(!canPanTrace()||state.read!==g.read){clearTraceGesture();return;}
+    const dx=event.clientX-g.x,dy=event.clientY-g.y;
+    if(!g.axis&&Math.max(Math.abs(dx),Math.abs(dy))>=6){
+      g.axis=Math.abs(dx)>=Math.abs(dy)?'x':'y';
+      if(g.axis==='x')traceCanvas.classList.add('is-panning');
+    }
+    if(g.axis==='x')panTraceTo(g.start-g.direction*dx*g.basesPerPixel);
+  });
+  traceCanvas.addEventListener('pointerup',event=>{
+    const g=traceGesture;if(!g||event.pointerId!==g.id)return;
+    clearTraceGesture();
+    if(!canPanTrace()||state.read!==g.read)return;
+    const dx=event.clientX-g.x,dy=event.clientY-g.y;
+    if(!g.axis&&Math.max(Math.abs(dx),Math.abs(dy))<6)inspectTraceAt(event.clientX);
+    else if(g.axis==='x')panTraceTo(g.start-g.direction*dx*g.basesPerPixel);
+  });
+  for(const type of ['pointercancel','lostpointercapture'])traceCanvas.addEventListener(type,event=>{
+    if(traceGesture?.id===event.pointerId)clearTraceGesture();
+  });
   for(const [tab,other,panel,otherPanel] of [['tab-variants','tab-alignment','variants-panel','alignment-panel'],['tab-alignment','tab-variants','alignment-panel','variants-panel']])$(tab).addEventListener('click',()=>{$(tab).className='tab active';$(tab).setAttribute('aria-selected','true');$(other).className='tab';$(other).setAttribute('aria-selected','false');$(panel).hidden=false;$(otherPanel).hidden=true;});
   $('align-prev').addEventListener('click',()=>{state.alignmentPage--;renderAlignment();});$('align-next').addEventListener('click',()=>{state.alignmentPage++;renderAlignment();});
   for(const kind of ['fasta','alignment','variants','quality','report'])$('export-'+kind).addEventListener('click',()=>exportResults(kind));

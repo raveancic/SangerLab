@@ -94,3 +94,8 @@ main{padding-inline:clamp(26px,4vw,64px)}
   .art-4{--size:210px;bottom:-3%;right:-86px}
 }
 
+
+/* Direct trace navigation. Vertical touch gestures still scroll the page. */
+#trace-canvas{touch-action:pan-y pinch-zoom;cursor:grab}
+#trace-canvas.is-panning{cursor:grabbing}
+.trace-gesture-hint{margin:7px 0 0;font-size:12px;color:var(--muted)}
