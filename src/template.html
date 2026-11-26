@@ -44,7 +44,7 @@
       </svg>
       <span class="brand-name">SangerLab<small>GENETICA DELLA CONSERVAZIONE</small></span>
     </a>
-    <div class="header-tags"><button type="button" id="theme-toggle" class="button small-button" aria-label="Attiva tema scuro" aria-pressed="false">☾ Dark</button><span class="version">0.1.5</span><span class="local-badge"><span aria-hidden="true">●</span> Analisi locale</span></div>
+    <div class="header-tags"><button type="button" id="theme-toggle" class="button small-button" aria-label="Attiva tema scuro" title="Attiva tema scuro" aria-pressed="false"><svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13.35A9 9 0 0 1 10.65 3.1 9 9 0 1 0 20.9 13.35Z"/></svg><svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42m0-14.14-1.42 1.42M6.35 17.65l-1.42 1.42"/></svg></button></div>
   </div></header>
   <main id="main">
     <section class="hero">
@@ -96,7 +96,7 @@
     </section>
 
     <section class="notes-grid"><details class="card notes" open><summary>Come leggere i risultati</summary><p>Una differenza è una candidata da controllare sul cromatogramma. Q20 corrisponde nominalmente a una probabilità di errore di chiamata dell'1%; Q30 allo 0,1%. Un Q elevato da solo non dimostra che una variante sia biologica.</p><p>Le inserzioni e le delezioni sono riportate con le basi di riferimento che le precedono e le seguono. Nelle ripetizioni, la posizione di un indel può non essere unica: la tabella non applica una nomenclatura mitocondriale standardizzata.</p></details><details class="card notes"><summary>Metodo, ambito e riproducibilità</summary><p>Allineamento semiglobale con gap affini: tutta la lettura conservata è allineata a un tratto della reference. Match +2, mismatch −3, apertura gap −6, estensione −1. La reference duplicata consente il passaggio attraverso l'origine; la numerazione viene poi riportata modulo 16.569.</p><p>Questa versione analizza una lettura alla volta. Non richiama i picchi, non misura l'eteroplasmia, non costruisce un consenso forward/reverse e non assegna aplogruppi. I Phred sono quelli già presenti nel file AB1.</p><p>Codice open source MIT. Parser adattato da <a href="https://github.com/animeshkundu/sanger-viewer" target="_blank" rel="noopener noreferrer">Sanger Viewer, Animesh</a>. Nessuna libreria esterna caricata, nessun account, nessun caricamento dei dati su server. Ricaricando la pagina si perde la sessione: esporta i risultati per conservarli.</p></details></section>
-    <footer><span>SangerLab · versione pilota 0.1.5 · 26 novembre 2026</span></footer>
+    <footer><span>SangerLab</span></footer>
   </main>
   <dialog id="trim-dialog" class="help-dialog" aria-labelledby="trim-dialog-title">
     <div class="help-dialog-head"><h2 id="trim-dialog-title">Come funziona il trimming?</h2><button type="button" class="button square help-close" aria-label="Chiudi spiegazione del trimming" autofocus>×</button></div>

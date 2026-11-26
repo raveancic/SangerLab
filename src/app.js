@@ -19,7 +19,7 @@
   function applyTheme(theme){
     const dark=theme==='dark';document.documentElement.dataset.theme=dark?'dark':'light';
     palette=chartPalettes[dark?'dark':'light'];Object.assign(colors,{A:palette.A,C:palette.C,G:palette.G,T:palette.T,N:palette.amb,R:palette.amb,Y:palette.amb});
-    const button=$('theme-toggle');button.textContent=dark?'☀ Light':'☾ Dark';button.setAttribute('aria-pressed',String(dark));button.setAttribute('aria-label',dark?'Attiva tema chiaro':'Attiva tema scuro');
+    const button=$('theme-toggle');button.setAttribute('aria-pressed',String(dark));button.setAttribute('aria-label',dark?'Attiva tema chiaro':'Attiva tema scuro');button.title=button.getAttribute('aria-label');
     document.querySelector('meta[name="theme-color"]').content=dark?'#303236':'#ffffff';
     drawTrace();renderInspector();if(state.result)renderAlignment();
   }
@@ -276,7 +276,7 @@
   const cell=value=>String(value??'').replace(/[\t\r\n]/g,' ');
   const tsv=rows=>rows.map(row=>row.map(cell).join('\t')).join('\n')+'\n';
   function report() {
-    return {tool:'SangerLab',version:'0.1.5',generatedAt:new Date().toISOString(),input:{fileName:state.read.fileName,sha256:state.readHash,baseCount:state.read.sequence.length,tags:state.read.tags},reference:{name:state.reference.name,accession:'NC_012920.1',sequenceSha256:state.referenceHash,length:N,originRcrs1:state.origin,exactRotationVerified:true},coordinateConvention:'All public positions 1-based; trim.start zero-based inclusive, trim.end zero-based exclusive. Insertions between leftAnchor/rightAnchor; not mitochondrial-normalized.',trim:state.analysisTrim,analysis:state.result,elapsedMs:state.elapsed,scope:'Single original basecaller read; no consensus, no heteroplasmy estimate, no haplogroup assignment.'};
+    return {tool:'SangerLab',version:'1.0.6',generatedAt:new Date().toISOString(),input:{fileName:state.read.fileName,sha256:state.readHash,baseCount:state.read.sequence.length,tags:state.read.tags},reference:{name:state.reference.name,accession:'NC_012920.1',sequenceSha256:state.referenceHash,length:N,originRcrs1:state.origin,exactRotationVerified:true},coordinateConvention:'All public positions 1-based; trim.start zero-based inclusive, trim.end zero-based exclusive. Insertions between leftAnchor/rightAnchor; not mitochondrial-normalized.',trim:state.analysisTrim,analysis:state.result,elapsedMs:state.elapsed,scope:'Single original basecaller read; no consensus, no heteroplasmy estimate, no haplogroup assignment.'};
   }
   function exportResults(kind) {
     if(!state.result)return;const name=cleanName(state.read.fileName),r=state.result,s=r.summary,trim=state.analysisTrim;

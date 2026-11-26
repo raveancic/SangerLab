@@ -121,3 +121,7 @@ che riguarda soltanto la preparazione del pacchetto.
 - `node --check src/app.js` e `node --test tests/*.test.cjs`: 31/31 superati.
 - Chromium con HTML caricato in memoria e Example7.ab1: allineamento accettato, 11 differenze candidate; verificati eventi wheel orizzontali in entrambi i versi, trascinamento mouse, clic di ispezione, wheel verticale senza spostamento della sequenza, swipe orizzontale touch simulato e tap di ispezione. Il risultato dell'allineamento e' identico prima e dopo le interazioni.
 - Trackpad fisico, tablet fisico e navigazione diretta con una lettura reverse reale non ancora collaudati. Il calcolo dello spostamento usa il verso della traccia visualizzata. Il comportamento nativo della barra inferiore resta invariato rispetto alla v0.1.4.
+
+## v1.0.6
+
+Presentation-only update: compact English README, icon-only theme switch, removed visible version and local badge. Scientific core and ABIF parser unchanged. All 31 Node tests passed.

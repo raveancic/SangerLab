@@ -99,3 +99,6 @@ main{padding-inline:clamp(26px,4vw,64px)}
 #trace-canvas{touch-action:pan-y pinch-zoom;cursor:grab}
 #trace-canvas.is-panning{cursor:grabbing}
 .trace-gesture-hint{margin:7px 0 0;font-size:12px;color:var(--muted)}
+
+/* Compact theme control, aligned right on desktop and mobile. */
+.topinner{flex-wrap:nowrap;align-items:center}.header-tags{width:auto;flex:0 0 auto;margin-left:auto;justify-content:flex-end}#theme-toggle{display:grid;place-items:center;width:44px;height:44px;min-width:44px;padding:0}#theme-toggle svg{width:24px;height:24px;pointer-events:none}#theme-toggle .theme-sun,:root[data-theme=dark] #theme-toggle .theme-moon{display:none}:root[data-theme=dark] #theme-toggle .theme-sun{display:block} 
