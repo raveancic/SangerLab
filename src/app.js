@@ -123,17 +123,22 @@
     const left=76,right=w-12,width=Math.max(1,right-left),scale=width/Math.max(1,sampleHi-sampleLo),x=s=>reverse?right-(s-sampleLo)*scale:left+(s-sampleLo)*scale;
     let minimum=0,maximum=1;
     for(const b of ['A','C','G','T'])for(let i=Math.floor(sampleLo);i<=Math.ceil(sampleHi);i++){const value=read.channels[b][i];if(value>maximum)maximum=value;if(value<minimum)minimum=value;}
+    // A fixed, contrasting reference lane makes the aligned bases unmistakable.
+    ctx.fillStyle='#f1e8ff';ctx.fillRect(0,33,w,19);
+    ctx.fillStyle='#f7f7f7';ctx.fillRect(0,53,w,17);
     let trim={start:0,end:0};try{trim=region();}catch{}
     for(let i=lo;i<hi;i++) {
       const x1=x(i? (peaks[i-1]+peaks[i])/2:sampleLo),x2=x(i+1<peaks.length?(peaks[i]+peaks[i+1])/2:sampleHi);
       const a=Math.min(x1,x2),b=Math.max(x1,x2);
       if(i<trim.start||i>=trim.end){ctx.fillStyle='#e5e4eab8';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
-      if(aligned&&['X','I','?'].includes(state.mapping.get(i)?.op)){ctx.fillStyle='#eee3fa';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
+      if(aligned&&['X','I','?'].includes(state.mapping.get(i)?.op)){ctx.fillStyle='#eee3fa';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);ctx.fillStyle='#c8a3f4';ctx.fillRect(Math.max(left,a),33,Math.min(right,b)-Math.max(left,a),37);}
       if(state.selected===i){ctx.fillStyle='#d8c5f396';ctx.fillRect(Math.max(left,a),0,Math.min(right,b)-Math.max(left,a),h);}
     }
     ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.textAlign='left';ctx.fillText('AB1',3,15);
-    if(aligned){ctx.fillText('rCRS',3,29);ctx.fillText('Reference',3,45);}
-    ctx.fillText('Campione',3,61);
+    ctx.fillText('rCRS',3,29);
+    ctx.font='bold 11px Arial';ctx.fillStyle='#39225a';ctx.fillText('Reference',4,47);
+    ctx.fillStyle='#222';ctx.fillText('Campione',4,65);
+    if(!aligned){ctx.font='11px Arial';ctx.fillStyle='#39225a';ctx.fillText('Premi Allinea alla rCRS per visualizzare le basi di riferimento',left+5,47);}
     ctx.strokeStyle='#e3e0e8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,241);ctx.lineTo(right,241);ctx.moveTo(left,314);ctx.lineTo(right,314);ctx.stroke();
     const y=value=>239-(value-minimum)/(maximum-minimum)*164;
     ctx.save();ctx.beginPath();ctx.rect(left,69,width,175);ctx.clip();
@@ -151,9 +156,10 @@
       const px=x(peaks[i]),base=reverse?Core.reverseComplement(read.sequence[i]):read.sequence[i],q=read.qualities?.[i],mapped=state.mapping.get(i);
       ctx.textAlign='center';ctx.font='8px system-ui';ctx.fillStyle='#656274';
       if(i%5===0||(i===lo&&(5-i%5)%5>=3)){ctx.fillText(String(i+1),px,15);if(aligned&&mapped)ctx.fillText(mapped.rcrsPos===null?'+':String(mapped.rcrsPos),px,29);}
-      ctx.font=hi-lo>80?'10px ui-monospace,monospace':'bold 12px ui-monospace,monospace';ctx.fillStyle=colors[base]||'#8b7b89';ctx.fillText(base,px,61);
-      if(aligned&&mapped){
-        ctx.fillStyle=colors[mapped.refBase]||'#6941a5';ctx.fillText(mapped.refBase,px,45);
+      ctx.font=hi-lo>80?'10px ui-monospace,monospace':'bold 12px ui-monospace,monospace';ctx.fillStyle=colors[base]||'#8b7b89';ctx.fillText(base,px,65);
+      if(aligned){
+        ctx.fillStyle=mapped?(colors[mapped.refBase]||'#39225a'):'#96919d';
+        ctx.fillText(mapped?mapped.refBase:'·',px,47);
       }
       if(q!==undefined&&q!==null){const bw=Math.max(2,Math.min(12,width/(hi-lo)*.65));ctx.fillStyle=q<20?'#d89767':'#8d70b8';ctx.fillRect(px-bw/2,314-q/qmax*50,bw,q/qmax*50);if(hi-lo<=50&&(width/(hi-lo)>12||i%5===0)){ctx.fillStyle='#656274';ctx.font='8px system-ui';ctx.fillText(String(q),px,261);}}
     }
@@ -170,7 +176,7 @@
         ctx.fillStyle='#6941a5';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('D'+(j-start+1),px,9);
       }
     }
-    text('trace-alignment-note',aligned?(reverse?'Cromatogramma e campione in reverse complement, nel verso rCRS. Le posizioni AB1 originali decrescono.':'Cromatogramma e campione nel verso rCRS (forward).')+' Viola = differenza o ambiguità; D = delezione tra picchi (dettagli nella tabella allineamento).':state.result?'Allineamento non accettato: confronto non mostrato nel cromatogramma.':'Reference e campione allineato disponibili dopo l’allineamento.');
+    text('trace-alignment-note',aligned?(reverse?'Cromatogramma e campione in reverse complement, nel verso rCRS. Le posizioni AB1 originali decrescono.':'Cromatogramma e campione nel verso rCRS (forward).')+' Riga Reference = basi rCRS allineate; · = base AB1 non allineata; − = gap nella reference. Viola = differenza o ambiguità; D = delezione tra picchi (dettagli nella tabella allineamento).':state.result?'Allineamento non accettato: confronto non mostrato nel cromatogramma.':'Reference e campione allineato disponibili dopo l’allineamento.');
     plotGeometry={left,right,sampleLo,sampleHi,lo,hi,width,reverse};
   }
   function renderInspector() {
@@ -200,7 +206,7 @@
     try {
       const worker=new Worker(url);URL.revokeObjectURL(url);state.worker=worker;
       const finish=()=>{worker.terminate();if(state.worker===worker)state.worker=null;state.busy=false;toggleControls();text('analyze','Allinea alla rCRS →');};
-      worker.onmessage=event=>{if(token!==state.run)return;finish();if(event.data.error){status(event.data.error,'error');return;}state.elapsed=performance.now()-started;state.result=event.data.result;state.analysisTrim={...r,method:state.trimMethod,cutoff:state.trimMethod==='Mott'?state.trimCutoff:null};state.mapping=new Map(state.result.columns.filter(c=>c.readIndex0!==null).map(c=>[c.readIndex0,c]));state.alignmentPage=0;renderResults();renderStats();drawTrace();renderInspector();const count=state.result.variants.length;status(state.result.summary.accepted?`Allineamento completato: ${count} differenze candidate. Controlla qualità e picchi prima di interpretarle.`:'Allineamento non accettato dalle soglie di controllo. Esamina gli avvisi e il trimming.',state.result.summary.accepted?'':'error');};
+      worker.onmessage=event=>{if(token!==state.run)return;finish();if(event.data.error){status(event.data.error,'error');return;}state.elapsed=performance.now()-started;state.result=event.data.result;state.analysisTrim={...r,method:state.trimMethod,cutoff:state.trimMethod==='Mott'?state.trimCutoff:null};state.mapping=new Map(state.result.columns.filter(c=>c.readIndex0!==null).map(c=>[c.readIndex0,c]));state.alignmentPage=0;renderResults();renderStats();if(state.result.summary.accepted){const first=state.result.columns.find(c=>c.readIndex0!==null);const size=Number($('view-count').value);state.viewStart=state.result.orientation==='reverse'?Math.max(r.start,first.readIndex0-size+1):first.readIndex0;state.selected=first.readIndex0;$('jump-base').value=first.readIndex0+1;}drawTrace();renderInspector();const count=state.result.variants.length;status(state.result.summary.accepted?`Allineamento completato: ${count} differenze candidate. Controlla qualità e picchi prima di interpretarle.`:'Allineamento non accettato dalle soglie di controllo. Esamina gli avvisi e il trimming.',state.result.summary.accepted?'':'error');};
       worker.onerror=()=>{if(token!==state.run)return;finish();status('Il browser non ha completato il calcolo. Prova a ricaricare il file o apri il tool da un sito HTTPS.','error');};
       worker.postMessage(payload);
     } catch(error){URL.revokeObjectURL(url);state.busy=false;toggleControls();text('analyze','Allinea alla rCRS →');status('Impossibile avviare il calcolo nel browser: '+error.message,'error');}

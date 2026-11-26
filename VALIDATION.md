@@ -78,3 +78,13 @@ le prove sono state effettuate inserendo il documento HTML in Chromium, non
 visitando il sito GitHub Pages. La compatibilità su tablet Android/iPad fisici
 resta da verificare. Il cromatogramma reale e la sua derivazione sintetica non
 sono distribuiti nell'aggiornamento.
+
+## v0.1.2: visibilita della reference nel cromatogramma
+
+31/31 test Node superati. Chromium headless: HTML caricato come contenuto
+(in questo ambiente la navigazione diretta file:// e bloccata), AB1 reale
+Example7.ab1, trimming 857 basi, coordinate 16055-341, 11 differenze.
+Controllate le istruzioni di disegno Canvas dopo allineamento e il pulsante
+Vedi picco: la C della reference e la T della lettura condividono la stessa
+ascissa nella variante C16069T. Screenshot verificato visivamente.
+Non testato su dispositivo Android fisico o sul sito GitHub Pages aggiornato.

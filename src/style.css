@@ -25,3 +25,5 @@ body{background:var(--paper);font-size:14px}.topbar{border-top:0;border-bottom:3
 .help-formula{background:var(--lavender);border:1px solid var(--ink);padding:10px 12px;margin:12px 0;text-align:center;font-weight:700;border-radius:4px}
 .help-table{width:100%;min-width:0;border-collapse:collapse;margin:12px 0 16px;table-layout:auto}.help-table caption{text-align:left;font-weight:700;margin-bottom:6px}.help-table th,.help-table td{white-space:normal;text-align:left;padding:7px 8px;font-size:13px;overflow-wrap:anywhere}
 @media(max-width:680px){.help-trigger{width:42px;height:42px}.help-dialog-body{padding:12px;font-size:13px}.help-dialog-head{padding:10px 12px}.help-dialog-head h2{font-size:18px}.help-table th,.help-table td{padding:6px;font-size:12px}}
+
+.trace-reference-banner{background:#f1e8ff;border:1px solid #2b2238;border-radius:4px;padding:7px 10px;margin:0 0 7px;color:#39225a;font-size:12px;}

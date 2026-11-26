@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const VERSION = '0.1.1';
+  const VERSION = '0.1.2';
   const DNA = /^[ACGTRYSWKMBDHVN]+$/;
   const COMPLEMENT = { A:'T', C:'G', G:'C', T:'A', R:'Y', Y:'R', S:'S', W:'W', K:'M', M:'K', B:'V', V:'B', D:'H', H:'D', N:'N' };
   const NEG = -1e15;

@@ -1,4 +1,4 @@
-# SangerLab v0.1.1 — D-loop e coordinate rCRS
+# SangerLab v0.1.2 — D-loop e coordinate rCRS
 
 Piccolo strumento didattico per analizzare **una lettura Sanger mitocondriale alla volta**: cromatogramma AB1, qualità Phred, trimming e allineamento a una reference circolare, con numerazione rCRS originale.
 
@@ -11,7 +11,7 @@ Il file `index.html` contiene l'applicazione completa. Il calcolo avviene nel br
 3. La reference inclusa è la rCRS completa **NC_012920.1**, ruotata per iniziare dalla posizione canonica **15.990**. Con **Cambia FASTA** puoi usare la stessa rCRS in un'altra rotazione, inclusa quella canonica.
 4. Controlla il trimming proposto. Puoi cambiare il cutoff Mott, modificare gli estremi manualmente oppure conservare tutte le basi.
 5. Premi **Allinea alla rCRS**. La modalità automatica confronta la lettura e il suo reverse complement.
-6. Confronta le righe Reference e Campione sopra i picchi; i pulsanti `?` spiegano Mott e Phred. Esamina le differenze e usa **Vedi picco** per controllare il cromatogramma nella posizione corrispondente.
+6. Confronta la riga lilla Reference e la riga Campione sopra i picchi (la vista si sposta automaticamente all’inizio allineato; i punti indicano basi AB1 non allineate); i pulsanti `?` spiegano Mott e Phred. Esamina le differenze e usa **Vedi picco** per controllare il cromatogramma nella posizione corrispondente.
 7. Esporta i risultati necessari prima di chiudere o ricaricare la pagina.
 
 La sessione rimane in memoria e non viene salvata automaticamente.
